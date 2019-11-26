@@ -1,10 +1,11 @@
 #pragma once
-#include "Node.h"
+#include "IR.h"
+#include <memory>
 
 class IRVisitor
 {
-  public:
-    virtual void visit(This *e) = 0;
-    virtual void visit(That *e) = 0;
-    virtual void visit(TheOther *e) = 0;
+public:
+  virtual void visit(Variable* ir){}
+  virtual void visit(For* ir){}
+  virtual void visit(IR* ir){}
 };

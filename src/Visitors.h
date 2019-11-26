@@ -1,34 +1,21 @@
 #pragma once
 #include "IRVisitor.h"
+#include <memory>
 
-class UpVisitor: public IRVisitor
+class PrintVisitor: public IRVisitor
 {
-    void visit(This *e)
+  void visit(For* node)
     {
-      std::cout << "do Up on " + e->thiss() << '\n';
+      std::cout<<"For(";
+      visit(node->min.get()->as<Variable>());
+      std::cout<<", ";
+      visit(node->extent.get());
+      std::cout<<")"<<std::endl;
     }
-    void visit(That *e)
-    {
-      std::cout << "do Up on " + e->that() << '\n';
-    }
-    void visit(TheOther *e)
-    {
-      std::cout << "do Up on " + e->theOther() << '\n';
-    }
-};
 
-class DownVisitor: public IRVisitor
-{
-    void visit(This *e)
+  void visit(Variable* node)
     {
-      std::cout << "do Down on " + e->thiss() << '\n';
+      std::cout << node->name;
     }
-    void visit(That *e)
-    {
-      std::cout << "do Down on " + e->that() << '\n';
-    }
-    void visit(TheOther *e)
-    {
-      std::cout << "do Down on " + e->theOther() << '\n';
-    }
+  
 };

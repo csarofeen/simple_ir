@@ -1,23 +1,17 @@
 #include <iostream>
 #include <string>
 
-#include "Node.h"
+#include "IR.h"
 #include "Visitors.h"
 
 int main()
 {
-  Node *list[] = 
-  {
-    new This(), new That(), new TheOther()
-  };
+  
+  Variable *A = new Variable("A");
+  Variable *B = new Variable("B");
+  For my_for(A, B);
+  PrintVisitor printer;
+  my_for.accept(printer);
 
-  UpVisitor up;
-  DownVisitor down;
-
-  for (int i = 0; i < 3; i++)
-    list[i]->accept(up);
-
-  for (int i = 0; i < 3; i++)
-    list[i]->accept(down);
 
 }
