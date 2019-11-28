@@ -12,3 +12,7 @@ void Variable::accept(IRVisitor &v){
 void IR::accept(IRVisitor &v){
   v.visit(this);
 }
+
+void Range::accept(IRVisitor &v){
+  v.visit(this);
+}
