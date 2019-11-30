@@ -6,23 +6,34 @@ class IRVisitor
 {
 public:
 
-#define CASE(T)					\
-    case(IRType::T):				\
-      visit(node->as<T>());			\
+#define IRVISITOR_CASE(T)   \
+    case(IRType::T):        \
+      visit(node->as<T>()); \
       break;
 
   virtual void visit(Node* node){
     switch(node->type){
-      CASE(For)
-      CASE(Range)
-      CASE(Variable)
-      CASE(Mul)
-      CASE(Div)
-      CASE(Add)
-      CASE(Sub)
+      IRVISITOR_CASE(For)
+      IRVISITOR_CASE(Range)
+      IRVISITOR_CASE(Variable)
+      IRVISITOR_CASE(Mul)
+      IRVISITOR_CASE(Div)
+      IRVISITOR_CASE(Add)
+      IRVISITOR_CASE(Sub)
     }
   }
   
+#define IRVISITOR_BIN_OP(OP)    \
+  virtual void visit(OP* node){ \
+    visit(node->LHS.get());     \
+    visit(node->RHS.get());     \
+  }
+
+IRVISITOR_BIN_OP(Div)
+IRVISITOR_BIN_OP(Mul)
+IRVISITOR_BIN_OP(Add)
+IRVISITOR_BIN_OP(Sub)
+
   virtual void visit(Variable* node){}
   
   virtual void visit(For* node){

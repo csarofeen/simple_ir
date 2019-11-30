@@ -5,22 +5,37 @@
 class PrintVisitor: public IRVisitor
 {
 
-#define CASE(T) case(IRType::T):		\
-  visit(node->as<T>());				\
-  break; 
+#define PRINTVISITOR_CASE(T) \
+  case(IRType::T):           \
+    visit(node->as<T>());    \
+    break; 
 
   void visit(Node* node){
     switch(node->type){
-      CASE(For)
-      CASE(Range)
-      CASE(Variable)
-      CASE(Mul)
-      CASE(Div)
-      CASE(Add)
-      CASE(Sub)
+      PRINTVISITOR_CASE(For)
+      PRINTVISITOR_CASE(Range)
+      PRINTVISITOR_CASE(Variable)
+      PRINTVISITOR_CASE(Mul)
+      PRINTVISITOR_CASE(Div)
+      PRINTVISITOR_CASE(Add)
+      PRINTVISITOR_CASE(Sub)
     }
   }
   
+#define PRINTVISITOR_BIN_OP(OP, OP_STR) \
+  virtual void visit(OP* node){         \
+    std::cout<<"(";                     \
+    visit(node->LHS.get());             \
+    std::cout<<" "<<OP_STR<<" ";        \
+    visit(node->RHS.get());             \
+    std::cout<<")";                     \
+  }
+
+  PRINTVISITOR_BIN_OP(Div, "/")
+  PRINTVISITOR_BIN_OP(Mul, "*")
+  PRINTVISITOR_BIN_OP(Add, "+")
+  PRINTVISITOR_BIN_OP(Sub, "-")
+
   void visit(For* node){
     std::cout<<"For( ";
     visit(node->loop_var.get()->as<Variable>());
