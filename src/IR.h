@@ -11,9 +11,8 @@ Adding a new IR node:
 2) Add the new IR node in this file, inherit from IR
 3) Add accept method in IR.cpp
 4) Define visit method in IRVisitor.h
-5)
 
- */
+*/
 
 class IRVisitor;
 
@@ -21,19 +20,22 @@ enum class IRType {
 		   null,
 		   For,
 		   Range,
-		   Variable
+		   Variable,
+		   Mul,
+		   Div,
+		   Add,
+		   Sub
 };
 
-class IR
-{
+class Node{
 protected:
-  const IRType type;
-  IR(IRType t = IRType::null):type(t){}
+  Node(IRType t = IRType::null):type(t){}
   
 public:
   virtual void accept(class IRVisitor &v);
 
   static constexpr IRType static_type = IRType::For;
+  const IRType type;
 
   template<typename T> T* as(){
     if (T::static_type == type){
@@ -46,36 +48,32 @@ public:
 };
 
 
-class Variable: public IR
-{
+class Variable: public Node{
 public:
   std::string name = "";
-  Variable(std::string name):name(name),IR(IRType::Variable){}
+  Variable(std::string name):name(name), Node(IRType::Variable){}
   void accept(IRVisitor &v);
   static constexpr IRType static_type = IRType::Variable;
 };
 
 
-class Range: public IR
-{
+class Range: public Node{
 public:
-  Range(Variable* min_, Variable* extent_):IR(IRType::Range){
-    min = std::shared_ptr<Variable>(min_);
-    extent = std::shared_ptr<Variable>(extent_);
+  Range(Node* min_, Node* extent_):Node(IRType::Range){
+    min = std::shared_ptr<Node>(min_);
+    extent = std::shared_ptr<Node>(extent_);
   }  
   
   void accept(IRVisitor &v);
-  std::shared_ptr<Variable> min, extent;
+  std::shared_ptr<Node> min, extent;
   static constexpr IRType static_type = IRType::Range;
 };
 
 
-class For: public IR
-{
-  
+class For: public Node{
 public:
 
-  For(Range* range_, Variable* loop_var_):IR(IRType::For){
+  For(Range* range_, Variable* loop_var_):Node(IRType::For){
     range = std::shared_ptr<Range>(range_);
     loop_var = std::shared_ptr<Variable>(loop_var_);
   }  
@@ -86,3 +84,22 @@ public:
   static constexpr IRType static_type = IRType::For;
 };
 
+
+#define BINARYOP(OP, OP_STR)				\
+class OP: public Node{					\
+  public:						\
+    OP(Node* LHS_, Node* RHS_):Node(IRType::OP){      	\
+      LHS = std::shared_ptr<Node>(LHS_);		\
+      RHS = std::shared_ptr<Node>(RHS_);		\
+    }							\
+  void accept(IRVisitor &v);				\
+  std::shared_ptr<Node> LHS;				\
+  std::shared_ptr<Node> RHS;				\
+  static constexpr IRType static_type = IRType::OP;	\
+  static constexpr char op_string[] = OP_STR;		\
+};							
+
+BINARYOP(Mul, "*")
+BINARYOP(Div, "/")
+BINARYOP(Add, "+")
+BINARYOP(Sub, "-")
