@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <cassert>
 
 /*
   Adding a new IR node:
@@ -47,28 +48,68 @@ public:
   }
 };
 
-
-//Starting with some very basic types.
-enum class CType{
-  Int, //Default size_t
-  Float, //Default single precision
-  Bool
-};
-
+//Starting with really basic const values here. There's a better version of this
+//in the JIT that I want to track down and use.
 class Variable: public Node{
+
+  const double fval = 0.0;
+  const size_t ival = 0;
+  const bool bval = false;
+
  public:
-  Variable(std::string name):name(name), Node(IRType::Variable){}
+  const bool is_imm = false;
+  const bool is_floating = false;
+  const bool is_int = false;
+  const bool is_bool = false;
+
+
+  int bytes(){
+    return (bits() + 7) / 8;
+  }
+  virtual int bits(){return 0;};
+
+  Variable(const char* name):name(name), Node(IRType::Variable){}
+
+  explicit Variable(size_t val):is_imm(true), is_int(true), ival(val), Node(IRType::Variable){}
+  explicit Variable(double val):is_imm(true), is_floating(true), ival(val), Node(IRType::Variable){}
+  explicit Variable(bool val):is_imm(true), is_bool(true), ival(val), Node(IRType::Variable){}
+
+  int get_ival() const{
+    assert(is_imm && is_int);
+    return ival;
+  }
+
+  double get_fval() const{
+    assert(is_imm && is_floating);
+    return fval;
+  }
+
+  bool get_bval() const{
+    assert(is_imm && is_bool);
+    return bval;
+  }
 
   void accept(IRVisitor &v);
-  static const std::shared_ptr<Variable> make(std::string name){
+  
+  static const std::shared_ptr<Variable> make(const char* name){
     return std::make_shared<Variable>(name);
+  }
+
+  static const std::shared_ptr<Variable> make(size_t val){
+    return std::make_shared<Variable>(val);
+  }
+
+  static const std::shared_ptr<Variable> make(double val){
+    return std::make_shared<Variable>(val);
+  }
+
+  static const std::shared_ptr<Variable> make(bool val){
+    return std::make_shared<Variable>(val);
   }
 
   std::string name = "";
   static constexpr IRType static_type = IRType::Variable;
 };
-
-
 
 class Range: public Node{
 public:
