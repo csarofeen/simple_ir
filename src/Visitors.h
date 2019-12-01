@@ -2,15 +2,18 @@
 #include "IRVisitor.h"
 #include <memory>
 
+namespace Fuser{
+
 class PrintVisitor: public IRVisitor
 {
 
+public:
 #define PRINTVISITOR_CASE(T) \
   case(IRType::T):           \
     visit(node->as<T>());    \
     break; 
 
-  void visit(Node* node){
+  void visit(const Node* const node){
     switch(node->type){
       PRINTVISITOR_CASE(For)
       PRINTVISITOR_CASE(Range)
@@ -22,13 +25,13 @@ class PrintVisitor: public IRVisitor
     }
   }
   
-#define PRINTVISITOR_BIN_OP(OP, OP_STR) \
-  virtual void visit(OP* node){         \
-    std::cout<<"(";                     \
-    visit(node->LHS.get());             \
-    std::cout<<" "<<OP_STR<<" ";        \
-    visit(node->RHS.get());             \
-    std::cout<<")";                     \
+#define PRINTVISITOR_BIN_OP(OP, OP_STR)      \
+  virtual void visit(const OP* const node){  \
+    std::cout<<"(";                          \
+    visit(node->LHS.get());                  \
+    std::cout<<" "<<OP_STR<<" ";             \
+    visit(node->RHS.get());                  \
+    std::cout<<")";                          \
   }
 
   PRINTVISITOR_BIN_OP(Div, "/")
@@ -36,7 +39,7 @@ class PrintVisitor: public IRVisitor
   PRINTVISITOR_BIN_OP(Add, "+")
   PRINTVISITOR_BIN_OP(Sub, "-")
 
-  void visit(For* node){
+  void visit(const For* const node){
     std::cout<<"For( ";
     visit(node->loop_var.get()->as<Variable>());
     std::cout<<" in ";
@@ -44,7 +47,7 @@ class PrintVisitor: public IRVisitor
     std::cout<<" )"<<std::endl;
   }
 
-  void visit(Range* node){
+  void visit(const Range* const node){
     std::cout<<"[";
     visit(node->min.get()->as<Variable>());
     std::cout<<", ";
@@ -52,8 +55,10 @@ class PrintVisitor: public IRVisitor
     std::cout<<"]";
   }
   
-  void visit(Variable* node){
+  void visit(const Variable* const node){
     std::cout << node->name;
   }
   
 };
+
+}

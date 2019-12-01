@@ -2,6 +2,8 @@
 #include "IR.h"
 #include <memory>
 
+
+namespace Fuser{
 class IRVisitor
 {
 public:
@@ -11,7 +13,7 @@ public:
       visit(node->as<T>()); \
       break;
 
-  virtual void visit(Node* node){
+  virtual void visit(const Node* const node){
     switch(node->type){
       IRVISITOR_CASE(For)
       IRVISITOR_CASE(Range)
@@ -24,7 +26,7 @@ public:
   }
   
 #define IRVISITOR_BIN_OP(OP)    \
-  virtual void visit(OP* node){ \
+  virtual void visit(const OP* const node){ \
     visit(node->LHS.get());     \
     visit(node->RHS.get());     \
   }
@@ -34,16 +36,17 @@ IRVISITOR_BIN_OP(Mul)
 IRVISITOR_BIN_OP(Add)
 IRVISITOR_BIN_OP(Sub)
 
-  virtual void visit(Variable* node){}
+  virtual void visit(const Variable* const node){}
   
-  virtual void visit(For* node){
+  virtual void visit(const For* const node){
     visit(node->range.get());
     visit(node->loop_var.get());
   }
 
-  virtual void visit(Range* node){
+  virtual void visit(const Range* const node){
     visit(node->min.get());
     visit(node->extent.get());
   }
   
 };
+}

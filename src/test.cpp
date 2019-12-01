@@ -5,15 +5,17 @@
 #include "IR.h"
 #include "Visitors.h"
 
+using namespace Fuser;
+
 int main()
 {
-  Variable *A = new Variable("A");
-  Variable *B = new Variable("B");
-  Variable *C = new Variable("C");
-  Node *div = new Div(B, C);
-  Range *loop_range = new Range(A, div);
-  Variable *iter_var = new Variable("i");
-  For *my_for = new For(loop_range, iter_var);
+  auto A = Variable::make("A");
+  auto B = Variable::make("B");
+  auto C = Variable::make("C");
+  auto div = Div::make(B, C);
+  auto loop_range = Range::make(A, div);
+  auto iter_var = Variable::make("i");
+  auto my_for = For::make(loop_range, iter_var);
   PrintVisitor printer;
-  my_for->accept(printer);
+  printer.visit(my_for.get());
 }

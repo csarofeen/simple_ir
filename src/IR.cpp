@@ -1,6 +1,8 @@
 #include "IR.h"
 #include "IRVisitor.h"
 
+namespace Fuser{
+
 #define ACCEPT(T)		\
   void T::accept(IRVisitor &v){ \
     v.visit(this);		\
@@ -14,3 +16,5 @@ ACCEPT(Mul)
 ACCEPT(Div)
 ACCEPT(Add)
 ACCEPT(Sub)
+
+}
