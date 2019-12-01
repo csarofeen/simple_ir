@@ -70,7 +70,22 @@ PrintVisitor(std::ostream& os):os(os){}
       os << node->get_ival();
     }
   }
-  
+
+ virtual void visit(const Tensor* const node){
+   os << node->name << " [";
+    for(int i=0; i<node->ndims; i++){
+      visit(node->shape(i).get());
+      if(i!=node->ndims-1)
+        os<<", ";
+    }
+    os<<"] (";
+    for(int i=0; i<node->ndims; i++){
+      visit(node->stride(i).get());
+      if(i!=node->ndims-1)
+        os<<", ";
+    }
+    os<<")";
+ }
 };
 
-}
+}//namespace Fuser

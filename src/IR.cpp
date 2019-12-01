@@ -16,5 +16,7 @@ ACCEPT(Mul)
 ACCEPT(Div)
 ACCEPT(Add)
 ACCEPT(Sub)
+ACCEPT(Tensor)
 
+int Tensor::tensor_name_count = 0;
 }

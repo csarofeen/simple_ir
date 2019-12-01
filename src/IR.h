@@ -2,14 +2,19 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <vector>
 #include <cassert>
 
 /*
   Adding a new IR node:
   1) Add a new IRType class in this file
-  2) Add the new IR node in this file, inherit from IR
-  3) Add accept method in IR.cpp
-  4) Define visit method in IRVisitor.h
+  2) Define visit method in IRVisitor.h
+  To the new class in this file:
+    3) Add the new IR node in this file, inherit from IR
+    4) Call IR constructor with IRType
+    5) Add static_type in the class
+    6) Add accept method in IR.cpp
+    7) Add make function that returns shared_ptr<this class>
 */
 
 namespace Fuser{
@@ -25,8 +30,9 @@ enum class IRType{
   Div,
   Add,
   Sub,
-  KnownVar //For hard-coding values (int, float, etc.)
+  Tensor
 };
+
 
 class Node{
 protected:
@@ -47,6 +53,7 @@ public:
     return nullptr;
   }
 };
+
 
 //Starting with really basic const values here. There's a better version of this
 //in the JIT that I want to track down and use.
@@ -111,6 +118,43 @@ class Variable: public Node{
   static constexpr IRType static_type = IRType::Variable;
 };
 
+
+class Tensor: public Node{
+std::vector<std::shared_ptr<Node> > _shape;
+std::vector<std::shared_ptr<Node> > _stride;
+
+public:
+static int tensor_name_count;
+
+Tensor(
+  int ndims_,
+  std::vector<std::shared_ptr<Node> > shapes_,
+  std::vector<std::shared_ptr<Node> > strides_,
+  const char* name_ = ""
+  ):_shape(shapes_), _stride(strides_), name(name_ == "" ? "tensor"+std::to_string(tensor_name_count++) : name_), ndims(ndims_), Node(IRType::Tensor){
+    assert(ndims == shapes_.size() && ndims == strides_.size());
+  }
+
+virtual void accept(class IRVisitor &v);
+
+static const std::shared_ptr<Tensor> make(
+  int ndims_,
+  std::vector<std::shared_ptr<Node> > shapes_,
+  std::vector<std::shared_ptr<Node> > strides_,
+  const char* name_ = ""
+){
+  return std::make_shared<Tensor>(ndims_, shapes_, strides_, name_);
+}
+
+std::shared_ptr<Node> shape(int i) const {assert(i<ndims); return _shape[i];}
+std::shared_ptr<Node> stride(int i) const {assert(i<ndims); return _stride[i];}
+
+const std::string name = "";
+static constexpr IRType static_type = IRType::Tensor;
+const int ndims = 0;
+
+};
+
 class Range: public Node{
 public:
   Range(const std::shared_ptr<Node> min_, const std::shared_ptr<Node> extent_):Node(IRType::Range), min(min_), extent(extent_){}
@@ -140,6 +184,7 @@ public:
   std::shared_ptr<Variable> loop_var;
   static constexpr IRType static_type = IRType::For;
 };
+
 
 #define BINARYOP(OP, OP_STR)                                                                                      \
 class OP: public Node{                                                                                            \

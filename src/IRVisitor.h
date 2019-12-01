@@ -22,6 +22,7 @@ public:
       IRVISITOR_CASE(Div)
       IRVISITOR_CASE(Add)
       IRVISITOR_CASE(Sub)
+      IRVISITOR_CASE(Tensor)
     }
   }
   
@@ -48,5 +49,13 @@ IRVISITOR_BIN_OP(Sub)
     visit(node->extent.get());
   }
   
+  virtual void visit(const Tensor* const node){
+    for(int i=0; i<node->ndims; i++){
+      visit(node->shape(i).get());
+      visit(node->stride(i).get());
+    }
+
+  }
+
 };
 }
