@@ -22,6 +22,7 @@ public:
       IRVISITOR_CASE(Div)
       IRVISITOR_CASE(Add)
       IRVISITOR_CASE(Sub)
+      IRVISITOR_CASE(Set)
       IRVISITOR_CASE(Tensor)
     }
   }
@@ -36,6 +37,7 @@ IRVISITOR_BIN_OP(Div)
 IRVISITOR_BIN_OP(Mul)
 IRVISITOR_BIN_OP(Add)
 IRVISITOR_BIN_OP(Sub)
+IRVISITOR_BIN_OP(Set)
 
   virtual void visit(const Variable* const node){}
   

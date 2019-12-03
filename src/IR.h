@@ -9,12 +9,13 @@
   Adding a new IR node:
   1) Add a new IRType class in this file
   2) Define visit method in IRVisitor.h
+  3) Add case to IRVisitor.h / Visitors.h default visit(const Node* const node)
   To the new class in this file:
-    3) Add the new IR node in this file, inherit from IR
-    4) Call IR constructor with IRType
-    5) Add static_type in the class
-    6) Add accept method in IR.cpp
-    7) Add make function that returns shared_ptr<this class>
+    4) Add the new IR node in this file, inherit from IR
+    5) Call IR constructor with IRType
+    6) Add static_type in the class
+    7) Add accept method in IR.cpp
+    8) Add make function that returns shared_ptr<this class>
 */
 
 namespace Fuser{
@@ -30,7 +31,12 @@ enum class IRType{
   Div,
   Add,
   Sub,
-  Tensor
+  Set,
+  Tensor,
+
+  //Make sure to keep this as the last type so we know how many node types we have
+  //This is going to be used for a hash function.
+  IRType_size
 };
 
 
@@ -207,6 +213,7 @@ BINARYOP(Mul, "*")
 BINARYOP(Div, "/")
 BINARYOP(Add, "+")
 BINARYOP(Sub, "-")
+BINARYOP(Set, "=")
 
 
 }//Fuser namspace

@@ -26,22 +26,30 @@ PrintVisitor(std::ostream& os):os(os){}
       PRINTVISITOR_CASE(Div)
       PRINTVISITOR_CASE(Add)
       PRINTVISITOR_CASE(Sub)
+      PRINTVISITOR_CASE(Set)
+      PRINTVISITOR_CASE(Tensor)
     }
   }
   
 #define PRINTVISITOR_BIN_OP(OP, OP_STR)      \
   virtual void visit(const OP* const node){  \
-    os<<"(";                          \
+    os<<"(";                                 \
     visit(node->LHS.get());                  \
-    os<<" "<<OP_STR<<" ";             \
+    os<<" "<<OP_STR<<" ";                    \
     visit(node->RHS.get());                  \
-    os<<")";                          \
+    os<<")";                                 \
   }
 
   PRINTVISITOR_BIN_OP(Div, "/")
   PRINTVISITOR_BIN_OP(Mul, "*")
   PRINTVISITOR_BIN_OP(Add, "+")
   PRINTVISITOR_BIN_OP(Sub, "-")
+
+  virtual void visit(const Set* const node){
+    visit(node->LHS.get());
+    os<<" = ";
+    visit(node->RHS.get());
+  }
 
   void visit(const For* const node){
     os<<"For( ";
