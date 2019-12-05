@@ -2,11 +2,111 @@
 #include <string>
 #include <memory>
 
-#include "IR.h"
-#include "Visitors.h"
-
+//#include "IR.h"
+//#include "Visitors.h"
+#include "IntrusivePtr.h"
 using namespace Fuser;
 
+enum IRNodeType{
+  ADD,
+  NULL_TYPE
+};
+
+
+struct IRNode {
+    //virtual void accept(IRVisitor *v) const = 0;
+    IRNode(IRNodeType t)
+        : node_type(t) {
+    }
+    virtual ~IRNode() = default;
+    mutable RefCount ref_count;
+    IRNodeType node_type;
+};
+
+template<>
+inline RefCount &Fuser::ref_count<IRNode>(const IRNode *t) noexcept {
+    return t->ref_count;
+}
+
+template<>
+inline void Fuser::destroy<IRNode>(const IRNode *t) {
+    delete t;
+}
+
+class Expr;
+struct BaseExprNode : public IRNode {
+    BaseExprNode(IRNodeType t)
+        : IRNode(t) {
+    }
+};
+
+template<typename T>
+struct ExprNode : public BaseExprNode {
+    //void accept(IRVisitor *v) const override;
+    //Expr mutate_expr(IRMutator *v) const override;
+    ExprNode()
+        : BaseExprNode(T::_node_type) {
+    }
+    virtual ~ExprNode() = default;
+};
+
+
+struct IRHandle : public IntrusivePtr<const IRNode> {
+    IRHandle() = default;
+
+    IRHandle(const IRNode *p)
+        : IntrusivePtr<const IRNode>(p) {
+    }
+
+//    void accept(IRVisitor *v) const {
+//        ptr->accept(v);
+//    }
+
+    template<typename T>
+    const T *as() const {
+        if (ptr && ptr->node_type == T::_node_type) {
+            return (const T *)ptr;
+        }
+        return nullptr;
+    }
+
+    IRNodeType node_type() const {
+        return ptr->node_type;
+    }
+};
+
+struct Expr : public IRHandle {
+    /** Make an undefined expression */
+    Expr() = default;
+
+    /** Make an expression from a concrete expression node pointer (e.g. Add) */
+    Expr(const BaseExprNode *n)
+        : IRHandle(n) {
+    }
+
+    explicit Expr(int8_t x)
+        //: IRHandle(Internal::IntImm::make(Int(8), x)) 
+        {
+    }
+};
+
+struct Add : public ExprNode<Add> {
+    static Expr make(){
+      Add *node = new Add;
+      return node;
+    }
+    static const IRNodeType _node_type = IRNodeType::ADD;
+};
+
+int main(){
+  std::cout<<"Start"<<std::endl;
+  auto my_add = Add::make();
+  std::cout<<"Done"<<std::endl;
+
+}
+
+
+/* Testing out tensors/general IR structure
 int   size_counter = 0;
 int stride_counter = 0;
 int tensor_counter = 0;
@@ -52,3 +152,4 @@ int main()
   //printer.visit(my_for.get());
   
 }
+*/
