@@ -7,8 +7,8 @@
 #include "IntrusivePtr.h"
 using namespace Fuser;
 
-enum IRNodeType{
-  ADD,
+enum class IRNodeType{
+  Add,
   NULL_TYPE
 };
 
@@ -51,16 +51,9 @@ struct ExprNode : public BaseExprNode {
 };
 
 
-struct IRHandle : public IntrusivePtr<const IRNode> {
-    IRHandle() = default;
-
-    IRHandle(const IRNode *p)
-        : IntrusivePtr<const IRNode>(p) {
-    }
-
-//    void accept(IRVisitor *v) const {
-//        ptr->accept(v);
-//    }
+struct Expr : public IntrusivePtr<const IRNode>{
+  Expr() = default;
+  Expr(const BaseExprNode *n):IntrusivePtr<const IRNode>(n){}
 
     template<typename T>
     const T *as() const {
@@ -75,27 +68,12 @@ struct IRHandle : public IntrusivePtr<const IRNode> {
     }
 };
 
-struct Expr : public IRHandle {
-    /** Make an undefined expression */
-    Expr() = default;
-
-    /** Make an expression from a concrete expression node pointer (e.g. Add) */
-    Expr(const BaseExprNode *n)
-        : IRHandle(n) {
-    }
-
-    explicit Expr(int8_t x)
-        //: IRHandle(Internal::IntImm::make(Int(8), x)) 
-        {
-    }
-};
-
 struct Add : public ExprNode<Add> {
     static Expr make(){
       Add *node = new Add;
       return node;
     }
-    static const IRNodeType _node_type = IRNodeType::ADD;
+    static const IRNodeType _node_type = IRNodeType::Add;
 };
 
 int main(){
