@@ -61,21 +61,14 @@ template<typename T>
 struct IntrusivePtr {
 private:
     void incref(T *p) {
-        if (p){
+        if (p)
             ref_count(p).increment();
-            std::cout<<"Inc ref count"<<std::endl;
-        }
     };
 
     void decref(T *p) {
-        if (p){
-            std::cout<<"dec ref count"<<std::endl;
-            if (ref_count(p).decrement() == 0){
-                std::cout<<"Destroy"<<std::endl;
+        if (p)
+            if (ref_count(p).decrement() == 0)
                 destroy(p);
-            }
-        }
-
     }
 
 protected:
