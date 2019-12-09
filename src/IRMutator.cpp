@@ -12,9 +12,8 @@ Expr IRMutator::mutate(const Expr &e) {
     return e.defined() ? e.get()->mutate_expr(this) : Expr();
 }
 
-Expr IRMutator::visit(const IntImm *op) {
-    return op;
-}
+Expr IRMutator::visit(const IntImm *op) {return op;}
+Expr IRMutator::visit(const Variable *op) {return op;}
 
 namespace {
 template<typename T>

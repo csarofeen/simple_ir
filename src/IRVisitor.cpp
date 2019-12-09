@@ -2,33 +2,41 @@
 
 namespace Fuser{
 
-IRVisitor::~IRVisitor() {
+#define IRVISITOR_CASE(T)   \
+    case(IRNodeType::T):        \
+      visit(node->as<T>()); \
+      break;
+
+  void IRVisitor::visit(const Expr* node){
+    switch(node->node_type()){
+      IRVISITOR_CASE(Mul)
+      IRVISITOR_CASE(Div)
+      IRVISITOR_CASE(Add)
+      IRVISITOR_CASE(Sub)
+      IRVISITOR_CASE(Variable)
+      IRVISITOR_CASE(IntImm)
+    }
+  }
+
+
+#define EMPTY_VISIT(T) \
+void IRVisitor::visit(const T *) {}
+
+EMPTY_VISIT(IntImm)
+
+void IRVisitor::visit(const Variable* var){
+    std::cout<<"IRVisitor visit variable."<<std::endl;
 }
 
-IRVisitor::IRVisitor() {
+#define BINARY_OP_VISIT(T) \
+void IRVisitor::visit(const T *op) { \
+    op->a.accept(this); \
+    op->b.accept(this); \
 }
 
-void IRVisitor::visit(const IntImm *) {
-}
-
-void IRVisitor::visit(const Add *op) {
-    op->a.accept(this);
-    op->b.accept(this);
-}
-
-void IRVisitor::visit(const Sub *op) {
-    op->a.accept(this);
-    op->b.accept(this);
-}
-
-void IRVisitor::visit(const Mul *op) {
-    op->a.accept(this);
-    op->b.accept(this);
-}
-
-void IRVisitor::visit(const Div *op) {
-    op->a.accept(this);
-    op->b.accept(this);
-}
+BINARY_OP_VISIT(Add)
+BINARY_OP_VISIT(Sub)
+BINARY_OP_VISIT(Mul)
+BINARY_OP_VISIT(Div)
 
 }

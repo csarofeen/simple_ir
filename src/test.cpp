@@ -10,7 +10,7 @@ using namespace Fuser;
 int main(){
   std::cout<<"Start"<<std::endl;
   auto v1 = IntImm::make(20);
-  auto v2 = IntImm::make(20);
+  auto v2 = Variable::make("myvar");
 
   Expr my_add = Sub::make(v1, v2);
 

@@ -6,21 +6,23 @@ namespace Fuser{
 
 class PrintVisitor : public IRVisitor {
 public:
-    /** These methods should call 'include' on the children to only
-     * visit them if they haven't been visited already. */
-    // @{
-    void visit(const IntImm *val){
-      std::cout<<val->value;
-    };
 
-    #define BINARY_PRINT(TYPE, STRING) \
-    void visit(const TYPE *op){ \
-      std::cout<<"( "; \
-      visit(op->a.as<IntImm>()); \
-      std::cout<<" "<<STRING<<" "; \
-      visit(op->b.as<IntImm>()); \
-      std::cout<<" )"<<std::endl; \
-    }
+  void visit(const Variable* op){
+    std::cout<<op->name;
+  }
+
+  void visit(const IntImm *val){
+    std::cout<<val->value;
+  };
+
+  #define BINARY_PRINT(TYPE, STRING) \
+  void visit(const TYPE *op){ \
+    std::cout<<"( "; \
+    IRVisitor::visit( (const Expr*) &(op->a) ); \
+    std::cout<<" "<<STRING<<" "; \
+    IRVisitor::visit( (const Expr*) &(op->b) ); \
+    std::cout<<" )"<<std::endl; \
+  }
 
   BINARY_PRINT(Add, "+")
   BINARY_PRINT(Sub, "-")

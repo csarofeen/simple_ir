@@ -7,6 +7,35 @@
 
 #include "IntrusivePtr.h"
 
+/* * * * *
+To add a new node T you must:
+IR.h
+  Add T to IRNodeType
+  Add Impl for:
+    struct T : public ExprNode<T> {
+      static Expr make(){
+        T* new_t = new T;
+        return new_t;
+    }
+    static const IRNodeType _node_type = IRNodeType::T;
+};
+
+IRVisitor.h
+  Add def: void visit(const T* node)
+
+IRMutator.h
+  Add def: Expr visit(const T* node)
+
+IR.cpp:
+  Add impl: Accept and Mutate_expr
+
+IRMutator.cpp
+  Add def: Expr visit(const T* node)
+
+IRVisitor.cpp
+  Add def: void visit(const T* node)
+* * * * */
+
 namespace Fuser{
 
 class IRMutator;
@@ -18,6 +47,7 @@ enum class IRNodeType {
     Sub,
     Mul,
     Div,
+    Variable,
     IntImm
 };
 
@@ -205,6 +235,19 @@ struct Div : public ExprNode<Div> {
       return make_binary_op<Div>(a, b);
     }
     static const IRNodeType _node_type = IRNodeType::Div;
+};
+
+struct Variable : public ExprNode<Variable> {
+  std::string name;
+
+  static Expr make(const char* name){
+    Variable* node = new Variable;
+    node->name = name;
+    return node;
+  }
+
+  static const IRNodeType _node_type = IRNodeType::Variable;
+
 };
 
 }//Fuser namspace

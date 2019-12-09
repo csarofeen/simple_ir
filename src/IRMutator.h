@@ -17,11 +17,16 @@ protected:
     template<typename T>
     friend struct ExprNode;
     
-    virtual Expr visit(const IntImm *);
-    virtual Expr visit(const Add *);
-    virtual Expr visit(const Sub *);
-    virtual Expr visit(const Mul *);
-    virtual Expr visit(const Div *);
+    #define VISIT_DEF(T) \
+    virtual Expr visit(const T *);
+
+    VISIT_DEF(IntImm)
+    VISIT_DEF(Add)
+    VISIT_DEF(Sub)
+    VISIT_DEF(Mul)
+    VISIT_DEF(Div)
+    VISIT_DEF(Variable)
+
 };
 
 }

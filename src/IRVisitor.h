@@ -5,19 +5,24 @@ namespace Fuser{
 
 class IRVisitor {
 public:
-    IRVisitor();
-    virtual ~IRVisitor();
+    IRVisitor(){}
+    virtual ~IRVisitor(){}
 
-protected:
     // ExprNode<> and StmtNode<> are allowed to call visit (to implement accept())
     template<typename T>
     friend struct ExprNode;
 
+    //  To use this dispatch in a derived visitor you need to call:
+    //  IRVisitor::visit( (const Expr *) op->some_Expr );
+    virtual void visit(const Expr *);
+
     virtual void visit(const Add *);
-    virtual void visit(const IntImm *);
     virtual void visit(const Sub *);
     virtual void visit(const Mul *);
     virtual void visit(const Div *);
+    virtual void visit(const IntImm *);
+    virtual void visit(const Variable *);
+
 };
 
 
