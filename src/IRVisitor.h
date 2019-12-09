@@ -15,7 +15,9 @@ protected:
 
     virtual void visit(const Add *);
     virtual void visit(const IntImm *);
-
+    virtual void visit(const Sub *);
+    virtual void visit(const Mul *);
+    virtual void visit(const Div *);
 };
 
 

@@ -32,5 +32,14 @@ Expr mutate_binary_operator(IRMutator *mutator, const T *op) {
 Expr IRMutator::visit(const Add *op) {
     return mutate_binary_operator(this, op);
 }
+Expr IRMutator::visit(const Sub *op) {
+    return mutate_binary_operator(this, op);
+}
+Expr IRMutator::visit(const Mul *op) {
+    return mutate_binary_operator(this, op);
+}
+Expr IRMutator::visit(const Div *op) {
+    return mutate_binary_operator(this, op);
+}
 
 }

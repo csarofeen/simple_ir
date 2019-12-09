@@ -12,7 +12,7 @@ int main(){
   auto v1 = IntImm::make(20);
   auto v2 = IntImm::make(20);
 
-  Expr my_add = Add::make(v1, v2);
+  Expr my_add = Sub::make(v1, v2);
 
   PrintVisitor printer;
   my_add.accept(&printer);

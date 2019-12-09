@@ -19,7 +19,9 @@ protected:
     
     virtual Expr visit(const IntImm *);
     virtual Expr visit(const Add *);
-  
+    virtual Expr visit(const Sub *);
+    virtual Expr visit(const Mul *);
+    virtual Expr visit(const Div *);
 };
 
 }

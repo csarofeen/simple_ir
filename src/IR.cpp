@@ -5,24 +5,28 @@
 
 namespace Fuser{
 
-template<>
-void ExprNode<IntImm>::accept(IRVisitor *v) const {
-    v->visit((const IntImm *)this);
+#define SIMPLE_ACCEPT(TYPE) \
+template<> \
+void ExprNode<TYPE>::accept(IRVisitor *v) const { \
+    v->visit((const TYPE *)this); \
 }
 
-template<>
-void ExprNode<Add>::accept(IRVisitor *v) const {
-    v->visit((const Add *)this);
+SIMPLE_ACCEPT(IntImm)
+SIMPLE_ACCEPT(Add)
+SIMPLE_ACCEPT(Sub)
+SIMPLE_ACCEPT(Mul)
+SIMPLE_ACCEPT(Div)
+
+#define SIMPLE_MUTATE_EXPR(TYPE) \
+template<> \
+Expr ExprNode<TYPE>::mutate_expr(IRMutator *v) const { \
+    return v->visit((const TYPE *)this); \
 }
 
-template<>
-Expr ExprNode<IntImm>::mutate_expr(IRMutator *v) const {
-    return v->visit((const IntImm *)this);
-}
+SIMPLE_MUTATE_EXPR(IntImm)
+SIMPLE_MUTATE_EXPR(Add)
+SIMPLE_MUTATE_EXPR(Sub)
+SIMPLE_MUTATE_EXPR(Mul)
+SIMPLE_MUTATE_EXPR(Div)
 
-template<>
-Expr ExprNode<Add>::mutate_expr(IRMutator *v) const {
-    return v->visit((const Add *)this);
-}
-
-}
+}//Fuser namespace

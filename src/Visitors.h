@@ -12,13 +12,21 @@ public:
     void visit(const IntImm *val){
       std::cout<<val->value;
     };
-    void visit(const Add *op){
-      std::cout<<"( ";
-      visit(op->a.as<IntImm>());
-      std::cout<<" + ";
-      visit(op->b.as<IntImm>());
-      std::cout<<" )"<<std::endl;
+
+    #define BINARY_PRINT(TYPE, STRING) \
+    void visit(const TYPE *op){ \
+      std::cout<<"( "; \
+      visit(op->a.as<IntImm>()); \
+      std::cout<<" "<<STRING<<" "; \
+      visit(op->b.as<IntImm>()); \
+      std::cout<<" )"<<std::endl; \
     }
+
+  BINARY_PRINT(Add, "+")
+  BINARY_PRINT(Sub, "-")
+  BINARY_PRINT(Mul, "*")
+  BINARY_PRINT(Div, "/")
+
 };
 
 

@@ -15,6 +15,9 @@ class IRVisitor;
 enum class IRNodeType {
     // Exprs, in order of strength
     Add,
+    Sub,
+    Mul,
+    Div,
     IntImm
 };
 
@@ -153,18 +156,55 @@ struct IntImm : public ExprNode<IntImm> {
     static const IRNodeType _node_type = IRNodeType::IntImm;
 };
 
+namespace {
+template<typename T>
+Expr make_binary_op(Expr a, Expr b){
+  T *node = new T;
+  node->a = std::move(a);
+  node->b = std::move(b);
+  return node;
+}
+}
+
 /** The sum of two expressions */
 struct Add : public ExprNode<Add> {
     Expr a, b;
 
     static Expr make(Expr a, Expr b) {
-      Add *node = new Add;
-      node->a = std::move(a);
-      node->b = std::move(b);
-      return node;
-}
+      return make_binary_op<Add>(a, b);
+    }
 
     static const IRNodeType _node_type = IRNodeType::Add;
+};
+
+/** The difference of two expressions */
+struct Sub : public ExprNode<Sub> {
+    Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<Sub>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::Sub;
+};
+
+/** The product of two expressions */
+struct Mul : public ExprNode<Mul> {
+    Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<Mul>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::Mul;
+};
+
+/** The ratio of two expressions */
+struct Div : public ExprNode<Div> {
+    Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<Div>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::Div;
 };
 
 }//Fuser namspace
