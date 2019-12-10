@@ -41,4 +41,28 @@ Expr IRMutator::visit(const Div *op) {
     return mutate_binary_operator(this, op);
 }
 
+Expr IRMutator::visit(const Tensor *op){
+
+    bool modded = false;
+    std::vector<Expr> shapes;
+    std::vector<Expr> strides;
+
+    for(const auto shape : op->shapes){
+        auto new_shape = mutate(shape);
+        shapes.push_back(new_shape);
+        if(!new_shape.same_as(shape))
+            modded = true;
+    }
+
+    for(const auto stride : op->strides){
+        auto new_stride = mutate(stride);
+        strides.push_back(new_stride);
+        if(!new_stride.same_as(stride))
+            modded = true;
+    }
+
+    if(modded)
+        return Tensor::make(op->ndims, shapes, strides, op->name.c_str());
+}
+
 }

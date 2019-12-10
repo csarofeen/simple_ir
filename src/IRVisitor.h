@@ -22,6 +22,7 @@ public:
     virtual void visit(const Div *);
     virtual void visit(const IntImm *);
     virtual void visit(const Variable *);
+    virtual void visit(const Tensor *);
 
 };
 

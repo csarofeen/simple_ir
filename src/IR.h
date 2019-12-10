@@ -20,14 +20,14 @@ IR.h
     static const IRNodeType _node_type = IRNodeType::T;
 };
 
+IR.cpp:
+  Add impl: Accept and Mutate_expr
+
 IRVisitor.h
   Add def: void visit(const T* node)
 
 IRMutator.h
   Add def: Expr visit(const T* node)
-
-IR.cpp:
-  Add impl: Accept and Mutate_expr
 
 IRMutator.cpp
   Add def: Expr visit(const T* node)
@@ -48,7 +48,8 @@ enum class IRNodeType {
     Mul,
     Div,
     Variable,
-    IntImm
+    IntImm,
+    Tensor
 };
 
 /** The abstract base classes for a node in the Halide IR. */
@@ -247,6 +248,35 @@ struct Variable : public ExprNode<Variable> {
   }
 
   static const IRNodeType _node_type = IRNodeType::Variable;
+
+};
+
+struct Tensor: public ExprNode<Tensor>{
+std::vector<Expr> shapes;
+std::vector<Expr> strides;
+
+public:
+static int tensor_name_count;
+
+static Expr make(
+  int ndims,
+  std::vector<Expr> shapes,
+  std::vector<Expr> strides,
+  const char* name = ""
+){
+  Tensor *node = new Tensor;
+  node->ndims = ndims;
+  node->shapes = shapes;
+  node->strides =strides;
+  node->name = name == "" ? "tensor"+std::to_string(tensor_name_count++) : name;
+}
+
+Expr shape(int i) const {assert(i<ndims); return shapes[i];}
+Expr stride(int i) const {assert(i<ndims); return strides[i];}
+
+std::string name = "";
+static const IRNodeType _node_type = IRNodeType::Tensor;
+int ndims = 0;
 
 };
 

@@ -17,6 +17,7 @@ SIMPLE_ACCEPT(Sub)
 SIMPLE_ACCEPT(Mul)
 SIMPLE_ACCEPT(Div)
 SIMPLE_ACCEPT(Variable)
+SIMPLE_ACCEPT(Tensor)
 
 #define SIMPLE_MUTATE_EXPR(TYPE) \
 template<> \
@@ -30,5 +31,9 @@ SIMPLE_MUTATE_EXPR(Sub)
 SIMPLE_MUTATE_EXPR(Mul)
 SIMPLE_MUTATE_EXPR(Div)
 SIMPLE_MUTATE_EXPR(Variable)
+SIMPLE_MUTATE_EXPR(Tensor)
+
+//For tensor names if one isn't provided, probably want the same for Variables.
+int Tensor::tensor_name_count = 0;
 
 }//Fuser namespace

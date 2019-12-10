@@ -26,7 +26,7 @@ protected:
     VISIT_DEF(Mul)
     VISIT_DEF(Div)
     VISIT_DEF(Variable)
-
+    VISIT_DEF(Tensor)
 };
 
 }
