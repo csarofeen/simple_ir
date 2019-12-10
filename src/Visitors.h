@@ -1,27 +1,30 @@
 #pragma once
-#include <iostream>
+#include <ostream>
 #include "IRVisitor.h"
-#
+
 namespace Fuser{
 
 class PrintVisitor : public IRVisitor {
+std::ostream& os;
+
 public:
+PrintVisitor(std::ostream& os):os(os){}
 
   void visit(const Variable* op){
-    std::cout<<op->name;
+    os<<op->name;
   }
 
   void visit(const IntImm *val){
-    std::cout<<val->value;
+    os<<val->value;
   };
 
   #define BINARY_PRINT(TYPE, STRING) \
   void visit(const TYPE *op){ \
-    std::cout<<"( "; \
+    os<<"( "; \
     IRVisitor::visit( (const Expr*) &(op->a) ); \
-    std::cout<<" "<<STRING<<" "; \
+    os<<" "<<STRING<<" "; \
     IRVisitor::visit( (const Expr*) &(op->b) ); \
-    std::cout<<" )"<<std::endl; \
+    os<<" )"<<std::endl; \
   }
 
   BINARY_PRINT(Add, "+")

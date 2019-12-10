@@ -14,7 +14,7 @@ int main(){
 
   Expr my_add = Sub::make(v1, v2);
 
-  PrintVisitor printer;
+  PrintVisitor printer(std::cout);
   my_add.accept(&printer);
 
   std::cout<<"Clear to: "<<std::endl;
