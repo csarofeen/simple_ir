@@ -41,7 +41,7 @@ BINARY_OP_VISIT(Mul)
 BINARY_OP_VISIT(Div)
 
 void IRVisitor::visit(const Tensor *op){
-    
+
     for(const auto shape : op->shapes)
         shape.accept(this);
 

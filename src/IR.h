@@ -269,6 +269,7 @@ static Expr make(
   node->shapes = shapes;
   node->strides =strides;
   node->name = name == "" ? "tensor"+std::to_string(tensor_name_count++) : name;
+  return node;
 }
 
 Expr shape(int i) const {assert(i<ndims); return shapes[i];}
