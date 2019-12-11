@@ -47,8 +47,11 @@ enum class IRNodeType {
     Sub,
     Mul,
     Div,
+    Set,
     Variable,
     IntImm,
+    For,
+    TensorAccessor,
     Tensor
 };
 
@@ -162,7 +165,7 @@ struct Expr : public IRHandle {
         : IRHandle(n) {
     }
 
-        /** Override get() to return a BaseExprNode * instead of an IRNode * */
+    /** Override get() to return a BaseExprNode * instead of an IRNode * */
     const BaseExprNode *get() const {
         return (const BaseExprNode *)ptr;
     }
@@ -197,7 +200,6 @@ Expr make_binary_op(Expr a, Expr b){
 }
 }
 
-/** The sum of two expressions */
 struct Add : public ExprNode<Add> {
     Expr a, b;
 
@@ -208,7 +210,6 @@ struct Add : public ExprNode<Add> {
     static const IRNodeType _node_type = IRNodeType::Add;
 };
 
-/** The difference of two expressions */
 struct Sub : public ExprNode<Sub> {
     Expr a, b;
 
@@ -218,7 +219,6 @@ struct Sub : public ExprNode<Sub> {
     static const IRNodeType _node_type = IRNodeType::Sub;
 };
 
-/** The product of two expressions */
 struct Mul : public ExprNode<Mul> {
     Expr a, b;
 
@@ -228,7 +228,6 @@ struct Mul : public ExprNode<Mul> {
     static const IRNodeType _node_type = IRNodeType::Mul;
 };
 
-/** The ratio of two expressions */
 struct Div : public ExprNode<Div> {
     Expr a, b;
 
@@ -236,6 +235,15 @@ struct Div : public ExprNode<Div> {
       return make_binary_op<Div>(a, b);
     }
     static const IRNodeType _node_type = IRNodeType::Div;
+};
+
+struct Set : public ExprNode<Set> {
+      Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<Set>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::Set;
 };
 
 struct Variable : public ExprNode<Variable> {
@@ -252,33 +260,59 @@ struct Variable : public ExprNode<Variable> {
 };
 
 struct Tensor: public ExprNode<Tensor>{
-std::vector<Expr> shapes;
-std::vector<Expr> strides;
+  std::vector<Expr> shapes;
+  std::vector<Expr> strides;
 
 public:
-static int tensor_name_count;
+  static int tensor_name_count;
 
 static Expr make(
   int ndims,
   std::vector<Expr> shapes,
   std::vector<Expr> strides,
   const char* name = ""
-){
-  Tensor *node = new Tensor;
-  node->ndims = ndims;
-  node->shapes = shapes;
-  node->strides =strides;
-  node->name = name == "" ? "tensor"+std::to_string(tensor_name_count++) : name;
-  return node;
+  ){
+    Tensor *node = new Tensor;
+    node->ndims = ndims;
+    node->shapes = shapes;
+    node->strides = strides;
+    node->name = name == "" ? "tensor"+std::to_string(tensor_name_count++) : name;
+    return node;
 }
 
-Expr shape(int i) const {assert(i<ndims); return shapes[i];}
-Expr stride(int i) const {assert(i<ndims); return strides[i];}
+  std::string name = "";
+  static const IRNodeType _node_type = IRNodeType::Tensor;
+  int ndims = 0;
 
-std::string name = "";
-static const IRNodeType _node_type = IRNodeType::Tensor;
-int ndims = 0;
+};
 
+struct TensorAccessor: public ExprNode<TensorAccessor>{
+
+public:
+static Expr make(Expr tensor, std::vector<Expr> indexers){
+    TensorAccessor *node = new TensorAccessor;
+    node->tensor = tensor;
+    node->indexers = indexers;
+    return node;
+}
+
+  static const IRNodeType _node_type = IRNodeType::TensorAccessor;
+  Expr tensor;
+  std::vector<Expr> indexers;
+};
+
+struct For: public ExprNode<For>{
+public:
+static Expr make(Expr min, Expr extent, Expr loop_var, Expr body){
+    For *node = new For;
+    node->min = min;
+    node->extent = extent;
+    node->loop_var = loop_var;
+    node->body = body;
+    return node;
+}
+  static const IRNodeType _node_type = IRNodeType::For;
+  Expr min, extent, body, loop_var;
 };
 
 }//Fuser namspace

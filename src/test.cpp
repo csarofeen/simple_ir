@@ -32,31 +32,21 @@ int main(){
 
   //A print visitor
   PrintVisitor printer(std::cout);
-
-  //Mutator that sets all IntImms to 0;
-  ClearMutator clear;
-
-
-  auto v1 = IntImm::make(20);
-  auto v2 = Variable::make("myvar");
-  auto A = get_tensor(3, "A");
-
-  Expr my_add = Sub::make(v1, v2);
-
-  auto second = clear.mutate(my_add);
   
-  std::cout<<"20 - my var : ";
-  my_add.accept(&printer);
+  auto A = get_tensor(3, "A");
+  auto B = get_tensor(3, "B");
+  auto C = get_tensor(3, "C");
+
+  Expr my_add = Add::make(A, B);
+  Expr result = Set::make(C, my_add);
+  std::cout<<"Printing a Stmt: ";
+  result.accept(&printer);
   std::cout<<std::endl;
 
-  std::cout<<"Cleared to: "<<std::endl;
-  second.accept(&printer);
-  std::cout<<std::endl;
+  LoopTranslate loop_nest_writer;
+  Expr loop_nest = loop_nest_writer.visit(result.as<Set>());
+  loop_nest.accept(&printer);
 
-  std::cout<<"Printing a tensor: ";
-  A.accept(&printer);
-  std::cout<<std::endl;
-
-  std::cout<<"Done"<<std::endl;
+  std::cout<<"\nDone"<<std::endl;
 
 }

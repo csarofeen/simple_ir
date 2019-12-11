@@ -20,9 +20,14 @@ public:
     virtual void visit(const Sub *);
     virtual void visit(const Mul *);
     virtual void visit(const Div *);
+    virtual void visit(const Set *);
     virtual void visit(const IntImm *);
     virtual void visit(const Variable *);
     virtual void visit(const Tensor *);
+    virtual void visit(const TensorAccessor *);
+    virtual void visit(const For *);
+
+
 
 };
 

@@ -13,9 +13,12 @@ namespace Fuser{
       IRVISITOR_CASE(Div)
       IRVISITOR_CASE(Add)
       IRVISITOR_CASE(Sub)
+      IRVISITOR_CASE(Set)
       IRVISITOR_CASE(Variable)
       IRVISITOR_CASE(IntImm)
       IRVISITOR_CASE(Tensor)
+      IRVISITOR_CASE(TensorAccessor)
+      IRVISITOR_CASE(For)
     }
   }
 
@@ -39,6 +42,7 @@ BINARY_OP_VISIT(Add)
 BINARY_OP_VISIT(Sub)
 BINARY_OP_VISIT(Mul)
 BINARY_OP_VISIT(Div)
+BINARY_OP_VISIT(Set)
 
 void IRVisitor::visit(const Tensor *op){
 
@@ -47,6 +51,19 @@ void IRVisitor::visit(const Tensor *op){
 
     for(const auto stride : op->strides)
         stride.accept(this);
+}
+
+void IRVisitor::visit(const TensorAccessor *op){
+    op->tensor.accept(this);
+    for(const auto var : op->indexers)
+        var.accept(this);
+}
+
+void IRVisitor::visit(const For *op){
+    op->loop_var.accept(this);
+    op->min.accept(this);
+    op->extent.accept(this);
+    op->body.accept(this);
 }
 
 }

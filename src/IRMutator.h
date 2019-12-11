@@ -25,8 +25,12 @@ protected:
     VISIT_DEF(Sub)
     VISIT_DEF(Mul)
     VISIT_DEF(Div)
+    VISIT_DEF(Set)
     VISIT_DEF(Variable)
     VISIT_DEF(Tensor)
+    VISIT_DEF(TensorAccessor)
+    VISIT_DEF(For)
+    
 };
 
 }
