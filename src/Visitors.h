@@ -14,13 +14,13 @@ public:
     };
     void visit(const Add *op){
       std::cout<<"( ";
-      visit(op->a.as<IntImm>());
+      op->a.accept(this);
       std::cout<<" + ";
-      visit(op->b.as<IntImm>());
+      op->b.accept(this);
       std::cout<<" )"<<std::endl;
     }
 };
 
 
 
-}//namespace Fuser
+} //namespace Fuser
