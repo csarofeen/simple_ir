@@ -1,4 +1,5 @@
 #include "IRVisitor.h"
+#include "IR.h"
 
 namespace Fuser{
 

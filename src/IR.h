@@ -6,11 +6,10 @@
 #include <cassert>
 
 #include "IntrusivePtr.h"
+#include "IRMutator.h"
+#include "IRVisitor.h"
 
 namespace Fuser{
-
-class IRMutator;
-class IRVisitor;
 
 enum class IRNodeType {
     // Exprs, in order of strength
@@ -69,16 +68,6 @@ struct BaseExprNode : public IRNode {
     }
     virtual Expr mutate_expr(IRMutator *v) const = 0;
     //Type type;
-};
-
-template<typename T>
-struct ExprNode : public BaseExprNode {
-    void accept(IRVisitor *v) const override;
-    Expr mutate_expr(IRMutator *v) const override;
-    ExprNode()
-        : BaseExprNode(T::_node_type) {
-    }
-    virtual ~ExprNode() = default;
 };
 
 struct IRHandle : public IntrusivePtr<const IRNode> {
@@ -141,15 +130,24 @@ struct ExprCompare {
     }
 };
 
+template<typename T>
+struct ExprNode : public BaseExprNode {
+    void accept(IRVisitor *v) const override {
+      v->visit(static_cast<const T*>(this));
+    };
+    Expr mutate_expr(IRMutator *v) const override {
+      return v->visit(static_cast<const T*>(this));
+    };
+    ExprNode()
+        : BaseExprNode(T::_node_type) {
+    }
+    virtual ~ExprNode() = default;
+};
+
 struct IntImm : public ExprNode<IntImm> {
     int64_t value;
 
-    static const IntImm *make(int64_t value){//Type t, int64_t value) {
-        IntImm *node = new IntImm;
-        node->value = value;
-        return node;
-    }
-
+    static const IntImm *make(int64_t value);
     static const IRNodeType _node_type = IRNodeType::IntImm;
 };
 
@@ -157,13 +155,7 @@ struct IntImm : public ExprNode<IntImm> {
 struct Add : public ExprNode<Add> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-      Add *node = new Add;
-      node->a = std::move(a);
-      node->b = std::move(b);
-      return node;
-}
-
+    static Expr make(Expr a, Expr b);
     static const IRNodeType _node_type = IRNodeType::Add;
 };
 

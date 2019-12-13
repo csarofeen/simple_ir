@@ -5,24 +5,18 @@
 
 namespace Fuser{
 
-template<>
-void ExprNode<IntImm>::accept(IRVisitor *v) const {
-    v->visit((const IntImm *)this);
+
+const IntImm* IntImm::make(int64_t value){//Type t, int64_t value) {
+    IntImm *node = new IntImm;
+    node->value = value;
+    return node;
 }
 
-template<>
-void ExprNode<Add>::accept(IRVisitor *v) const {
-    v->visit((const Add *)this);
-}
-
-template<>
-Expr ExprNode<IntImm>::mutate_expr(IRMutator *v) const {
-    return v->visit((const IntImm *)this);
-}
-
-template<>
-Expr ExprNode<Add>::mutate_expr(IRMutator *v) const {
-    return v->visit((const Add *)this);
+Expr Add::make(Expr a, Expr b) {
+  Add *node = new Add;
+  node->a = std::move(a);
+  node->b = std::move(b);
+  return node;
 }
 
 }

@@ -1,7 +1,11 @@
 #pragma once
-#include "IR.h"
 
 namespace Fuser{
+
+template<typename T>
+class ExprNode;
+class IntImm;
+class Add;
 
 class IRVisitor {
 public:

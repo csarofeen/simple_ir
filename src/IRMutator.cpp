@@ -1,4 +1,5 @@
 #include "IRMutator.h"
+#include "IR.h"
 
 namespace Fuser{
 
