@@ -21,11 +21,14 @@ public:
     virtual void visit(const Mul *);
     virtual void visit(const Div *);
     virtual void visit(const Set *);
+    virtual void visit(const Mod *);
+    virtual void visit(const LT *);
     virtual void visit(const IntImm *);
     virtual void visit(const Variable *);
     virtual void visit(const Tensor *);
     virtual void visit(const TensorAccessor *);
     virtual void visit(const For *);
+    virtual void visit(const If *);
 
 
 

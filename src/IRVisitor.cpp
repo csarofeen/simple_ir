@@ -13,24 +13,24 @@ namespace Fuser{
       IRVISITOR_CASE(Div)
       IRVISITOR_CASE(Add)
       IRVISITOR_CASE(Sub)
+      IRVISITOR_CASE(Mod)
+      IRVISITOR_CASE(LT)
       IRVISITOR_CASE(Set)
       IRVISITOR_CASE(Variable)
       IRVISITOR_CASE(IntImm)
       IRVISITOR_CASE(Tensor)
       IRVISITOR_CASE(TensorAccessor)
       IRVISITOR_CASE(For)
+      IRVISITOR_CASE(If)
     }
   }
 
 
 #define EMPTY_VISIT(T) \
-void IRVisitor::visit(const T *) {}
+void IRVisitor::visit(const T*) {}
 
 EMPTY_VISIT(IntImm)
-
-void IRVisitor::visit(const Variable* var){
-    std::cout<<"IRVisitor visit variable."<<std::endl;
-}
+EMPTY_VISIT(Variable)
 
 #define BINARY_OP_VISIT(T) \
 void IRVisitor::visit(const T *op) { \
@@ -42,6 +42,8 @@ BINARY_OP_VISIT(Add)
 BINARY_OP_VISIT(Sub)
 BINARY_OP_VISIT(Mul)
 BINARY_OP_VISIT(Div)
+BINARY_OP_VISIT(Mod)
+BINARY_OP_VISIT(LT)
 BINARY_OP_VISIT(Set)
 
 void IRVisitor::visit(const Tensor *op){
@@ -63,6 +65,11 @@ void IRVisitor::visit(const For *op){
     op->loop_var.accept(this);
     op->min.accept(this);
     op->extent.accept(this);
+    op->body.accept(this);
+}
+
+void IRVisitor::visit(const If *op){
+    op->pred.accept(this);
     op->body.accept(this);
 }
 

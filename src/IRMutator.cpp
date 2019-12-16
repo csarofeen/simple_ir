@@ -1,4 +1,5 @@
 #include "IRMutator.h"
+#include "Printer.h"
 
 namespace Fuser{
 
@@ -41,10 +42,16 @@ Expr IRMutator::visit(const Mul *op) {
 Expr IRMutator::visit(const Div *op) {
     return mutate_binary_operator(this, op);
 }
+Expr IRMutator::visit(const Mod *op) {
+    return mutate_binary_operator(this, op);
+}
 Expr IRMutator::visit(const Set *op) {
     return mutate_binary_operator(this, op);
 }
 
+Expr IRMutator::visit(const LT *op) {
+    return mutate_binary_operator(this, op);
+}
 
 Expr IRMutator::visit(const Tensor *op){
 
@@ -75,12 +82,11 @@ Expr IRMutator::visit(const TensorAccessor *op){
     auto tensor = mutate(op->tensor);
     bool mutated = !tensor.same_as(op->tensor);
     std::vector<Expr> indexers;
-    for(const auto &ind: indexers){
+    for(const auto &ind: op->indexers){
         auto new_ind = mutate(ind);
         indexers.push_back(new_ind);
         mutated = mutated | !ind.same_as(new_ind);
     }
-
     if(mutated)
         return TensorAccessor::make(tensor, indexers);
     return op;
@@ -95,8 +101,17 @@ Expr IRMutator::visit(const For *op){
         && extent.same_as(op->extent)
         && loop_var.same_as(op->loop_var)
         && body.same_as(op->body))
-        return For::make(min, extent, loop_var, body);
-    return op;
+        return op;
+    return For::make(min, extent, loop_var, body);
+}
+
+Expr IRMutator::visit(const If *op){
+    Expr pred = mutate(op->pred);
+    Expr body = mutate(op->body);
+    if(pred.same_as(op->pred)
+        && body.same_as(op->body))
+        return op;
+    return If::make(pred, body);
 }
 
 }

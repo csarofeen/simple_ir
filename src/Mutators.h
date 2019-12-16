@@ -6,6 +6,7 @@
 namespace Fuser{
 
 class ClearMutator : public IRMutator {
+
 public:
     /** These methods should call 'include' on the children to only
      * visit them if they haven't been visited already. */
@@ -18,12 +19,19 @@ public:
 
 class LoopTranslate : public IRMutator{
     const char* loop_names = "ijklmnop";
+
+    //!!WARNING!!
+    //loops     is inner most loop first!
+    //loop_vars is outer most loop first!
+    std::vector<Expr> loops;
+    std::vector<Expr> loop_vars;
+    
+
 public:
     
     Expr visit(const Tensor *op){
         assert(op->ndims == loops.size());
         return TensorAccessor::make(op, loop_vars);       
-
     }
 
     Expr visit(const Set *op){
@@ -31,8 +39,6 @@ public:
             return IRMutator::visit(op);
         
         assert(loops.size() == 0);
-        body = op;
-        output_tensor = op->a;
         const Tensor* tensor_ref = op->a.as<Tensor>();
 
         //Create loops, with unset bodies, we will use these to set tensor 
@@ -76,15 +82,6 @@ public:
         return new_loops.back();
 
     }
-
-    //!!WARNING!!
-    //loops     is inner most loop first!
-    //loop_vars is outer most loop first!
-    std::vector<Expr> loops;
-    std::vector<Expr> loop_vars;
-
-    Expr output_tensor;
-    Expr body;
 
     LoopTranslate(){}
 

@@ -47,10 +47,13 @@ enum class IRNodeType {
     Sub,
     Mul,
     Div,
+    Mod,
     Set,
+    LT,
     Variable,
     IntImm,
     For,
+    If,
     TensorAccessor,
     Tensor
 };
@@ -63,6 +66,7 @@ struct IRNode {
      * visitors.
      */
     virtual void accept(IRVisitor *v) const = 0;
+    
     IRNode(IRNodeType t)
         : node_type(t) {
     }
@@ -165,6 +169,14 @@ struct Expr : public IRHandle {
         : IRHandle(n) {
     }
 
+    bool operator== (const Expr& other) const{
+      return same_as(other);
+    }
+    
+    bool operator<(const Expr& other) const {
+      return this->get() < other.get();
+    }
+
     /** Override get() to return a BaseExprNode * instead of an IRNode * */
     const BaseExprNode *get() const {
         return (const BaseExprNode *)ptr;
@@ -172,11 +184,12 @@ struct Expr : public IRHandle {
 
 };
 
-struct ExprCompare {
-    bool operator()(const Expr &a, const Expr &b) const {
-        return a.get() < b.get();
+struct ExprHash {
+    size_t operator()(const Expr &a) const {
+        return std::hash<size_t>()((size_t) (a.get()));
     }
 };
+
 
 struct IntImm : public ExprNode<IntImm> {
     int64_t value;
@@ -235,6 +248,24 @@ struct Div : public ExprNode<Div> {
       return make_binary_op<Div>(a, b);
     }
     static const IRNodeType _node_type = IRNodeType::Div;
+};
+
+struct Mod : public ExprNode<Mod> {
+    Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<Mod>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::Mod;
+};
+
+struct LT : public ExprNode<LT> {
+    Expr a, b;
+
+    static Expr make(Expr a, Expr b) {
+      return make_binary_op<LT>(a, b);
+    }
+    static const IRNodeType _node_type = IRNodeType::LT;
 };
 
 struct Set : public ExprNode<Set> {
@@ -313,6 +344,18 @@ static Expr make(Expr min, Expr extent, Expr loop_var, Expr body){
 }
   static const IRNodeType _node_type = IRNodeType::For;
   Expr min, extent, body, loop_var;
+};
+
+struct If: public ExprNode<If>{
+public:
+static Expr make(Expr pred, Expr body){
+    If *node = new If;
+    node->pred = pred;
+    node->body = body;
+    return node;
+}
+  static const IRNodeType _node_type = IRNodeType::If;
+  Expr pred, body;
 };
 
 }//Fuser namspace
