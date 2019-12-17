@@ -6,7 +6,7 @@
 #include "Visitors.h"
 #include "Printer.h"
 #include "Mutators.h"
-#include "LoopFuser.h"
+#include "LoopTransforms.h"
 
 using namespace Fuser;
 
