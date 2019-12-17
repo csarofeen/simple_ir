@@ -33,6 +33,8 @@ protected:
     VISIT_DEF(TensorAccessor)
     VISIT_DEF(For)
     VISIT_DEF(If)
+    VISIT_DEF(Attr)
+    VISIT_DEF(Thread)
 };
 
 }

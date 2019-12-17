@@ -24,6 +24,8 @@ SIMPLE_ACCEPT(Set)
 SIMPLE_ACCEPT(TensorAccessor)
 SIMPLE_ACCEPT(For)
 SIMPLE_ACCEPT(If)
+SIMPLE_ACCEPT(Attr)
+SIMPLE_ACCEPT(Thread)
 
 #define SIMPLE_MUTATE_EXPR(TYPE) \
 template<> \
@@ -44,6 +46,8 @@ SIMPLE_MUTATE_EXPR(Set)
 SIMPLE_MUTATE_EXPR(TensorAccessor)
 SIMPLE_MUTATE_EXPR(For)
 SIMPLE_MUTATE_EXPR(If)
+SIMPLE_MUTATE_EXPR(Attr)
+SIMPLE_MUTATE_EXPR(Thread)
 
 //For tensor names if one isn't provided, probably want the same for Variables.
 int Tensor::tensor_name_count = 0;

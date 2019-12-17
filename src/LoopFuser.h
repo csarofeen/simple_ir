@@ -186,6 +186,61 @@ public:
 
 };
 
+//To-do need to check that thread is not already bound inside, or above loop context
+class LoopBinder : public IRMutator
+{
+friend Expr bind(Expr container, Expr loop, Expr bind);
 
+Expr loop;
+Expr thread;
+bool bound = false;
+bool in_loop_scope = false;
+public:
+
+    Expr visit(const For* op){
+        if(loop.same_as(op) && !bound){
+            bound = true;
+
+            in_loop_scope = true;
+            Expr body = IRMutator::mutate(op->body);
+            in_loop_scope = false;
+
+            return IRMutator::mutate(
+                Attr::make(Attr::ATTR_TYPE::ThreadBinding, 
+                For::make(loop.as<For>()->min, loop.as<For>()->extent, thread, body), thread)
+            );
+        }
+        return IRMutator::visit(op);
+    }
+
+    Expr visit(const Variable* var){
+        if(loop.as<For>()->loop_var.same_as(var)){
+            return thread;
+        }
+        return var;
+
+    }
+
+
+    static Expr bind(Expr container, Expr loop, Expr thread){
+        assert(loop.as<For>());
+        auto t = thread.as<Thread>();
+        assert(loop.as<For>()->min.as<IntImm>());
+        if(t->thread_type == Thread::THREAD_TYPE::TIDx
+        || t->thread_type == Thread::THREAD_TYPE::TIDy
+        || t->thread_type == Thread::THREAD_TYPE::TIDz
+        )
+            assert(loop.as<For>()->extent.as<IntImm>());
+        assert(loop.as<For>()->min.as<IntImm>()->value==0);
+        assert(thread.as<Thread>());
+        LoopBinder binder;
+        
+        binder.loop = loop;
+        binder.thread = thread;
+        
+        return binder.mutate(container);
+    }
+
+};
 
 } // namespace Fuser

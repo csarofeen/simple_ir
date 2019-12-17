@@ -29,7 +29,8 @@ public:
     virtual void visit(const TensorAccessor *);
     virtual void visit(const For *);
     virtual void visit(const If *);
-
+    virtual void visit(const Attr *);
+    virtual void visit(const Thread *);
 
 
 };

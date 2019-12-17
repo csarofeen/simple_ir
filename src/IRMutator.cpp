@@ -114,4 +114,18 @@ Expr IRMutator::visit(const If *op){
     return If::make(pred, body);
 }
 
+Expr IRMutator::visit(const Attr *op){
+    Expr body = mutate(op->body);
+    Expr value = mutate(op->value);
+    
+    if( body.same_as(op->body)
+     && value.same_as(op->value))
+        return op;
+    return Attr::make(op->attr_type, body, value);
+}
+
+Expr IRMutator::visit(const Thread *op){
+    return op;
+}
+
 }

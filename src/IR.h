@@ -4,7 +4,6 @@
 #include <memory>
 #include <vector>
 #include <cassert>
-
 #include "IntrusivePtr.h"
 
 /* * * * *
@@ -54,8 +53,10 @@ enum class IRNodeType {
     IntImm,
     For,
     If,
+    Attr,
     TensorAccessor,
-    Tensor
+    Tensor,
+    Thread
 };
 
 /** The abstract base classes for a node in the Halide IR. */
@@ -149,6 +150,7 @@ struct IRHandle : public IntrusivePtr<const IRNode> {
         if (ptr && ptr->node_type == T::_node_type) {
             return (const T *)ptr;
         }
+
         return nullptr;
     }
 
@@ -345,6 +347,56 @@ static Expr make(Expr min, Expr extent, Expr loop_var, Expr body){
   static const IRNodeType _node_type = IRNodeType::For;
   Expr min, extent, body, loop_var;
 };
+
+struct Thread: public ExprNode<Thread>{
+public:
+enum class THREAD_TYPE{
+  TIDx,
+  TIDy,
+  TIDz,
+  BIDx,
+  BIDy,
+  BIDz,
+  Null
+};
+
+
+static Expr make(THREAD_TYPE thread_type){
+    auto node = new Thread;
+    node->thread_type = thread_type;
+    return node;
+}
+  
+  THREAD_TYPE thread_type = THREAD_TYPE::Null;
+  static const IRNodeType _node_type = IRNodeType::Thread;
+
+};
+
+struct Attr: public ExprNode<Attr>{
+public:
+enum class ATTR_TYPE{
+  ThreadBinding,
+  Null
+};
+
+static Expr make(ATTR_TYPE attribute_type, Expr body, Expr value){
+    Attr *node = new Attr;
+    node->attr_type = attribute_type;
+    node->body = body;
+    node->value = value;
+    return node;
+}
+  
+  static const IRNodeType _node_type = IRNodeType::Attr;
+  //Type of attribute
+  ATTR_TYPE attr_type = ATTR_TYPE::Null;
+  //The attribute we're settinng
+  Expr value;
+  //What we're making an attribute for
+  Expr body;
+
+};
+
 
 struct If: public ExprNode<If>{
 public:

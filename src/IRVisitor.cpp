@@ -9,19 +9,22 @@ namespace Fuser{
 
   void IRVisitor::visit(const Expr* node){
     switch(node->node_type()){
-      IRVISITOR_CASE(Mul)
-      IRVISITOR_CASE(Div)
-      IRVISITOR_CASE(Add)
-      IRVISITOR_CASE(Sub)
-      IRVISITOR_CASE(Mod)
-      IRVISITOR_CASE(LT)
-      IRVISITOR_CASE(Set)
-      IRVISITOR_CASE(Variable)
-      IRVISITOR_CASE(IntImm)
-      IRVISITOR_CASE(Tensor)
-      IRVISITOR_CASE(TensorAccessor)
-      IRVISITOR_CASE(For)
-      IRVISITOR_CASE(If)
+    IRVISITOR_CASE(Add)
+    IRVISITOR_CASE(Sub)
+    IRVISITOR_CASE(Mul)
+    IRVISITOR_CASE(Div)
+    IRVISITOR_CASE(Mod)
+    IRVISITOR_CASE(Set)
+    IRVISITOR_CASE(LT)
+    IRVISITOR_CASE(Variable)
+    IRVISITOR_CASE(IntImm)
+    IRVISITOR_CASE(For)
+    IRVISITOR_CASE(If)
+    IRVISITOR_CASE(Attr)
+    IRVISITOR_CASE(TensorAccessor)
+    IRVISITOR_CASE(Tensor)
+    IRVISITOR_CASE(Thread)
+      
     }
   }
 
@@ -31,6 +34,7 @@ void IRVisitor::visit(const T*) {}
 
 EMPTY_VISIT(IntImm)
 EMPTY_VISIT(Variable)
+EMPTY_VISIT(Thread)
 
 #define BINARY_OP_VISIT(T) \
 void IRVisitor::visit(const T *op) { \
@@ -71,6 +75,11 @@ void IRVisitor::visit(const For *op){
 void IRVisitor::visit(const If *op){
     op->pred.accept(this);
     op->body.accept(this);
+}
+
+void IRVisitor::visit(const Attr *op){
+    op->body.accept(this);
+    op->value.accept(this);
 }
 
 }

@@ -40,23 +40,30 @@ int main(){
 
   Expr my_add = Add::make(A, B);
   Expr result = Set::make(C, my_add);
-  std::cout<<"Printing a Stmt: "<<result<<std::endl;
+  std::cout<<"Printing a Stmt:\n"<<result<<std::endl;
 
   LoopTranslate loop_nest_writer;
   Expr loop_nest = loop_nest_writer.visit(result.as<Set>());
-  std::cout<<loop_nest<<std::endl;
+  std::cout<<"Basic loop nest:\n"<<loop_nest<<std::endl;
 
   std::vector<Expr> fors = findAll<For>(loop_nest);
 
   Expr fused = LoopFuser::fuse(loop_nest, fors[0], fors[1]);
-  std::cout<<"Fused:\n"<<fused<<std::endl;
-  fors = findAll<For>(fused);
-  Expr fused2 = LoopFuser::fuse(fused, fors[0], fors[1]);
-  std::cout<<"Fused2:\n"<<fused2<<std::endl;
 
-  fors = findAll<For>(fused2);
-  auto Split = LoopSplitter::split(fused2, fors[0], IntImm::make(128));
-  std::cout<<"Split: "<<Split<<std::endl;
+  fors = findAll<For>(fused);
+  fused = LoopFuser::fuse(fused, fors[0], fors[1]);
+  std::cout<<"Fused:\n"<<fused<<std::endl;
+
+  fors = findAll<For>(fused);
+  auto Split = LoopSplitter::split(fused, fors[0], IntImm::make(128));
+  std::cout<<"Split:\n"<<Split<<std::endl;
+
+  fors = findAll<For>(Split);
+  auto bound = LoopBinder::bind(Split, fors[0], Thread::make(Thread::THREAD_TYPE::BIDx));
+  fors = findAll<For>(bound);
+  bound = LoopBinder::bind(bound, fors[1], Thread::make(Thread::THREAD_TYPE::TIDx));
+
+  std::cout<<"Bound to threads:\n"<<bound<<std::endl;
   std::cout<<"\nDone"<<std::endl;
 
 }
