@@ -31,8 +31,7 @@ public:
     template<typename T>
     friend struct ExprNode;
 
-    //  To use this dispatch in a derived visitor you need to call:
-    //  IRVisitor::visit( (const Expr *) op->some_Expr );
+    //Generic dispatch
     virtual void visit(const Expr *);
 
     virtual void visit(const Add *);

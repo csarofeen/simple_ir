@@ -35,24 +35,21 @@ protected:
     template<typename T>
     friend struct ExprNode;
     
-    #define VISIT_DEF(T) \
-    virtual Expr visit(const T *);
-
-    VISIT_DEF(IntImm)
-    VISIT_DEF(Add)
-    VISIT_DEF(Sub)
-    VISIT_DEF(Mul)
-    VISIT_DEF(Div)
-    VISIT_DEF(Mod)
-    VISIT_DEF(LT)
-    VISIT_DEF(Set)
-    VISIT_DEF(Variable)
-    VISIT_DEF(Tensor)
-    VISIT_DEF(TensorAccessor)
-    VISIT_DEF(For)
-    VISIT_DEF(If)
-    VISIT_DEF(Attr)
-    VISIT_DEF(Thread)
+    virtual Expr visit(const IntImm *);
+    virtual Expr visit(const Add *);
+    virtual Expr visit(const Sub *);
+    virtual Expr visit(const Mul *);
+    virtual Expr visit(const Div *);
+    virtual Expr visit(const Mod *);
+    virtual Expr visit(const LT *);
+    virtual Expr visit(const Set *);
+    virtual Expr visit(const Variable *);
+    virtual Expr visit(const Tensor *);
+    virtual Expr visit(const TensorAccessor *);
+    virtual Expr visit(const For *);
+    virtual Expr visit(const If *);
+    virtual Expr visit(const Attr *);
+    virtual Expr visit(const Thread *);
 };
 
 }
