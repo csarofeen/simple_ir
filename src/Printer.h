@@ -16,6 +16,7 @@ std::ostream &operator<<(std::ostream &os, const ExprNode<T> *s)
 
 class PrintVisitor : public IRVisitor
 {
+protected:
     std::ostream &os;
 
     void visit(Expr op)

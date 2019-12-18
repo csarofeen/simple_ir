@@ -7,6 +7,7 @@
 #include "Printer.h"
 #include "Mutators.h"
 #include "LoopTransforms.h"
+#include "CUDA_Lower.h"
 
 using namespace Fuser;
 
@@ -65,8 +66,16 @@ int main(){
   bound = LoopBinder::bind(bound, fors[1], Thread::make(Thread::THREAD_TYPE::TIDx));
   std::cout<<"Bound to threads:\n"<<bound<<std::endl;
 
-  
+  std::cout<<"CUDA code: "<<std::endl;
 
+  std::vector<Expr> tensors;
+  tensors.push_back(A);
+  tensors.push_back(B);
+  tensors.push_back(C);
+
+  CUDALower::lower(std::cout, bound, tensors, "Kernel0");
+  
+  std::cout<<std::endl;
   std::cout<<"\nDone"<<std::endl;
 
 }
