@@ -43,7 +43,8 @@ int main(){
   std::cout<<"Printing a Stmt:\n"<<result<<std::endl;
 
   LoopTranslate loop_nest_writer;
-  Expr loop_nest = loop_nest_writer.mutate(result);
+  Expr block = Block::make({result});
+  Expr loop_nest = LoopTranslate::translate(C.as<Tensor>(), block.as<Block>());
   std::cout<<"Basic loop nest:\n"<<loop_nest<<std::endl;
 
   std::vector<Expr> fors = findAll<For>(loop_nest);
@@ -62,8 +63,10 @@ int main(){
   auto bound = LoopBinder::bind(Split, fors[0], Thread::make(Thread::THREAD_TYPE::BIDx));
   fors = findAll<For>(bound);
   bound = LoopBinder::bind(bound, fors[1], Thread::make(Thread::THREAD_TYPE::TIDx));
-
   std::cout<<"Bound to threads:\n"<<bound<<std::endl;
+
+  
+
   std::cout<<"\nDone"<<std::endl;
 
 }

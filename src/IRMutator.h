@@ -5,7 +5,8 @@ namespace Fuser{
 
 template<typename T>
 class ExprNode;
-class Expr;
+
+struct Expr;
 
 class IntImm;
 class Add;
@@ -22,6 +23,7 @@ class For;
 class If;
 class Attr;
 class Thread;
+class Block;
 
 class IRMutator {
 public:
@@ -50,6 +52,7 @@ protected:
     virtual Expr visit(const If *);
     virtual Expr visit(const Attr *);
     virtual Expr visit(const Thread *);
+    virtual Expr visit(const Block *);
 };
 
 }

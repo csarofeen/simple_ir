@@ -60,5 +60,10 @@ void IRVisitor::visit(const Attr *op){
     op->value.accept(this);
 }
 
+void IRVisitor::visit(const Block *op){
+    for(auto &expr : op->exprs)
+        expr.accept(this);
+}
+
 }
 

@@ -54,7 +54,8 @@ enum class IRNodeType {
     Attr,
     TensorAccessor,
     Tensor,
-    Thread
+    Thread,
+    Block
 };
 
 /** The abstract base classes for a node in the Halide IR. */
@@ -101,7 +102,7 @@ template<>
 inline void destroy<IRNode>(const IRNode *t) {
     delete t;
 }
-class Expr; 
+struct Expr; 
 
 struct BaseExprNode : public IRNode {
     BaseExprNode(IRNodeType t)
@@ -297,10 +298,11 @@ struct Variable : public ExprNode<Variable> {
 };
 
 struct Tensor: public ExprNode<Tensor>{
-  std::vector<Expr> shapes;
-  std::vector<Expr> strides;
 
 public:
+  std::vector<Expr> shapes;
+  std::vector<Expr> strides;
+  
   static int tensor_name_count;
 
 static Expr make(
@@ -412,6 +414,15 @@ static Expr make(Expr pred, Expr body){
 }
   static const IRNodeType _node_type = IRNodeType::If;
   Expr pred, body;
+};
+
+class Block : public ExprNode<Block> {
+ public:
+  static Expr make(const std::vector<Expr>& exprs) { return new Block(exprs); }
+  explicit Block(const std::vector<Expr>& exprs) : exprs(exprs) {}
+  std::vector<Expr> exprs;
+  static const IRNodeType _node_type = IRNodeType::Block;
+
 };
 
 }//Fuser namspace

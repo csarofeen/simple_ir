@@ -4,7 +4,7 @@ namespace Fuser{
 template<typename T>
 class ExprNode;
 
-class Expr;
+struct Expr;
 
 class IntImm;
 class Add;
@@ -21,6 +21,7 @@ class For;
 class If;
 class Attr;
 class Thread;
+class Block;
 
 class IRVisitor {
 public:
@@ -49,6 +50,7 @@ public:
     virtual void visit(const If *);
     virtual void visit(const Attr *);
     virtual void visit(const Thread *);
+    virtual void visit(const Block *);
 
 
 };

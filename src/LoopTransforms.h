@@ -1,80 +1,54 @@
 #pragma once
+#include "IR.h"
 #include "IRVisitor.h"
 #include "IRMutator.h"
 #include "Printer.h"
 #include <unordered_map>
 #include <set>
+#include <algorithm>
 
 namespace Fuser
 {
 
 class LoopTranslate : public IRMutator{
-    const char* loop_names = "ijklmnop";
 
-    //!!WARNING!!
-    //loops     is inner most loop first!
-    //loop_vars is outer most loop first!
-    std::vector<Expr> loops;
     std::vector<Expr> loop_vars;
     
 
 public:
-    
     Expr visit(const Tensor *op){
-        assert(op->ndims == loops.size());
+        //Only working for pointwise operations where all tensors have same number of dims
+        //and same sizes on those dims (not strides)
+        assert(op->ndims == loop_vars.size());
         return TensorAccessor::make(op, loop_vars);       
     }
-
-    Expr visit(const Set *op){
-        if(!op->a.as<Tensor>())
-            return IRMutator::visit(op);
+    
+    static Expr translate(const Tensor* domain, const Block* exprs){
         
-        assert(loops.size() == 0);
-        const Tensor* tensor_ref = op->a.as<Tensor>();
-
+        const char* loop_names = "ijklmnop";
+        std::vector<Expr> loops;
+        std::vector<Expr> loop_vars;
         //Create loops, with unset bodies, we will use these to set tensor 
-        for(int i=tensor_ref->shapes.size()-1; i>=0; i--){
+        assert(domain->shapes.size()<std::string(loop_names).length()); //better add more loop variables!
+        for(int i=domain->shapes.size()-1; i>=0; i--){
             std::string loop_name{loop_names[i]};
             Expr loop_var = Variable::make(loop_name.c_str());
             loop_vars.push_back(loop_var);
-            if(i == tensor_ref->shapes.size()-1)
-                loops.push_back(For::make(IntImm::make(0), tensor_ref->shapes[i], loop_var, IntImm::make(0)));
+            
+            if(i == domain->shapes.size()-1)
+                loops.push_back(For::make(IntImm::make(0), domain->shapes[i], loop_var, exprs));
             else
-                loops.push_back(For::make(IntImm::make(0), tensor_ref->shapes[i], loop_var, IntImm::make(0)));
+                loops.push_back(For::make(IntImm::make(0), domain->shapes[i], loop_var, loops[loops.size()-1]));
         }
+
+        Expr loop_nest = loops[loops.size()-1];
 
         std::reverse(loop_vars.begin(), loop_vars.end());
 
-        if(loops.size() == 0)
-            return Expr();
-
-        auto A = mutate(op->a);
-        auto B = mutate(op->b);
-        Expr new_body = op;
-        if(!A.same_as(op->a) || !B.same_as(op->b))
-            new_body = Set::make(A, B);
-
-        //Make the loops for real, new_body will be the body of inner most loop.
-        std::vector<Expr> new_loops;
-        Expr prev;
-        for(auto expr : loops){
-            auto loop = expr.as<For>();
-            if(expr.same_as(*loops.begin())){
-                prev = For::make(loop->min, loop->extent, loop->loop_var, new_body);
-                new_loops.push_back(prev);
-            }else{
-                prev = For::make(loop->min, loop->extent, loop->loop_var, prev);
-                new_loops.push_back(prev);
-            }
-        }
-
-        loops = std::vector<Expr>();
-        
-        return new_loops.back();
-
+        LoopTranslate translater;
+        translater.loop_vars = loop_vars;
+        return translater.mutate(loop_nest);
     }
-
-    LoopTranslate(){}
 
 };
 

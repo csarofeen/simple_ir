@@ -63,6 +63,7 @@ public:
 
     void visit(const Set *op)
     {
+        indent();
         visit(op->a);
         os << " = ";
         visit(op->b);
@@ -115,14 +116,10 @@ public:
         visit(op->extent);
         os << "){\n";
         indent_count++;
-        if (!op->body.as<For>())
-            indent();
         visit(op->body);
         indent_count--;
-        if (op->body.as<For>())
-            os << "\n";
         indent();
-        os << "}";
+        os << "}\n";
     }
 
     void visit(const If *op)
@@ -135,7 +132,7 @@ public:
         visit(op->body);
         indent_count--;
         indent();
-        os << "}";
+        os << "}\n";
     }
 
     void visit(const Attr *op)
@@ -179,6 +176,13 @@ public:
             os << "blockIdx.z";
             break;
         }
+    }
+
+    void visit(const Block* op){
+        for(const auto& expr: op->exprs){
+            expr.accept(this);
+        }
+
     }
 };
 

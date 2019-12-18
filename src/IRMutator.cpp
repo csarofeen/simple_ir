@@ -129,4 +129,19 @@ Expr IRMutator::visit(const Thread *op){
     return op;
 }
 
+Expr IRMutator::visit(const Block *op){
+    std::vector<Expr> exprs;
+    bool mutated = false;
+    for(const auto& expr : op->exprs){
+        auto new_expr = mutate(expr);
+        exprs.push_back(new_expr);
+        if(!expr.same_as(new_expr))
+            mutated = true;
+    }
+    if(mutated)
+        return Block::make(exprs);
+    return op;
+    
+}
+
 }
