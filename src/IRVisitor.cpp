@@ -1,33 +1,11 @@
 #include "IRVisitor.h"
+#include "IR.h"
 
 namespace Fuser{
 
-#define IRVISITOR_CASE(T)   \
-    case(IRNodeType::T):        \
-      visit(node->as<T>()); \
-      break;
-
   void IRVisitor::visit(const Expr* node){
-    switch(node->node_type()){
-    IRVISITOR_CASE(Add)
-    IRVISITOR_CASE(Sub)
-    IRVISITOR_CASE(Mul)
-    IRVISITOR_CASE(Div)
-    IRVISITOR_CASE(Mod)
-    IRVISITOR_CASE(Set)
-    IRVISITOR_CASE(LT)
-    IRVISITOR_CASE(Variable)
-    IRVISITOR_CASE(IntImm)
-    IRVISITOR_CASE(For)
-    IRVISITOR_CASE(If)
-    IRVISITOR_CASE(Attr)
-    IRVISITOR_CASE(TensorAccessor)
-    IRVISITOR_CASE(Tensor)
-    IRVISITOR_CASE(Thread)
-      
-    }
+    node->accept(this);
   }
-
 
 #define EMPTY_VISIT(T) \
 void IRVisitor::visit(const T*) {}

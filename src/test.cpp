@@ -43,7 +43,7 @@ int main(){
   std::cout<<"Printing a Stmt:\n"<<result<<std::endl;
 
   LoopTranslate loop_nest_writer;
-  Expr loop_nest = loop_nest_writer.visit(result.as<Set>());
+  Expr loop_nest = loop_nest_writer.mutate(result);
   std::cout<<"Basic loop nest:\n"<<loop_nest<<std::endl;
 
   std::vector<Expr> fors = findAll<For>(loop_nest);

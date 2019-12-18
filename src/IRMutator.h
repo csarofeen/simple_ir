@@ -1,9 +1,27 @@
 #pragma once
-#include "IR.h"
 #include <memory>
 
-
 namespace Fuser{
+
+template<typename T>
+class ExprNode;
+class Expr;
+
+class IntImm;
+class Add;
+class Sub;
+class Mul;
+class Div;
+class Mod;
+class LT;
+class Set;
+class Variable;
+class Tensor;
+class TensorAccessor;
+class For;
+class If;
+class Attr;
+class Thread;
 
 class IRMutator {
 public:

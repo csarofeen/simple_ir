@@ -5,6 +5,8 @@
 #include <vector>
 #include <cassert>
 #include "IntrusivePtr.h"
+#include "IRVisitor.h"
+#include "IRMutator.h"
 
 /* * * * *
 To add a new node T you must:
@@ -19,13 +21,12 @@ IR.h
     static const IRNodeType _node_type = IRNodeType::T;
 };
 
-IR.cpp:
-  Add impl: Accept and Mutate_expr
-
 IRVisitor.h
+  class T; // forward declaration;
   Add def: void visit(const T* node)
 
 IRMutator.h
+  class T; // forward declaration;
   Add def: Expr visit(const T* node)
 
 IRMutator.cpp
@@ -36,9 +37,6 @@ IRVisitor.cpp
 * * * * */
 
 namespace Fuser{
-
-class IRMutator;
-class IRVisitor;
 
 enum class IRNodeType {
     // Exprs, in order of strength
@@ -113,16 +111,6 @@ struct BaseExprNode : public IRNode {
     //Type type;
 };
 
-template<typename T>
-struct ExprNode : public BaseExprNode {
-    void accept(IRVisitor *v) const override;
-    Expr mutate_expr(IRMutator *v) const override;
-    ExprNode()
-        : BaseExprNode(T::_node_type) {
-    }
-    virtual ~ExprNode() = default;
-};
-
 struct IRHandle : public IntrusivePtr<const IRNode> {
     IRHandle() = default;
 
@@ -186,12 +174,28 @@ struct Expr : public IRHandle {
 
 };
 
+template<typename T>
+struct ExprNode : public BaseExprNode {
+    void accept(IRVisitor *v) const override {
+      v->visit(static_cast<const T*>(this));
+    };
+    Expr mutate_expr(IRMutator *v) const override {
+      return v->visit(static_cast<const T*>(this));
+    }
+    ExprNode()
+        : BaseExprNode(T::_node_type) {
+    }
+    virtual ~ExprNode() = default;
+};
+
 struct ExprHash {
     size_t operator()(const Expr &a) const {
         return std::hash<size_t>()((size_t) (a.get()));
     }
 };
 
+// TODO(REVIEW): should we move all the nodes below somehwere else?
+// so adding a new node is not rebuilding the universe.
 
 struct IntImm : public ExprNode<IntImm> {
     int64_t value;
