@@ -167,7 +167,7 @@ public:
             new_loop_var,
             ol->body);
         fuser.replace.emplace(ol, fused_loop);
-        fuser.replace.emplace(ol->loop_var, Div::make(new_loop_var, ol->extent));
+        fuser.replace.emplace(ol->loop_var, Div::make(new_loop_var, il->extent));
         fuser.replace.emplace(il->loop_var, Mod::make(new_loop_var, il->extent));
         fuser.remove.emplace(inner_loop);
         return fuser.mutate(container);
