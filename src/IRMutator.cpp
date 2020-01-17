@@ -54,6 +54,10 @@ Expr IRMutator::visit(const LT *op) {
     return mutate_binary_operator(this, op);
 }
 
+Expr IRMutator::visit(const Tensor *op){
+    std::runtime_error("Not implemented.");
+}
+
 Expr IRMutator::visit(const JITTensor *op){
 
     bool modded = false;
@@ -94,16 +98,14 @@ Expr IRMutator::visit(const TensorAccessor *op){
 }
 
 Expr IRMutator::visit(const For *op){
-    Expr min = mutate(op->min);
-    Expr extent = mutate(op->extent);
+    Expr range = mutate(op->range);
     Expr loop_var = mutate(op->loop_var);
     Expr body = mutate(op->body);
-    if(min.same_as(op->loop_var)
-        && extent.same_as(op->extent)
+    if(range.same_as(op->range)
         && loop_var.same_as(op->loop_var)
         && body.same_as(op->body))
         return op;
-    return For::make(min, extent, loop_var, body);
+    return For::make(range, loop_var, body);
 }
 
 Expr IRMutator::visit(const If *op){
@@ -113,6 +115,15 @@ Expr IRMutator::visit(const If *op){
         && body.same_as(op->body))
         return op;
     return If::make(pred, body);
+}
+
+Expr IRMutator::visit(const Range *op){
+    Expr min = mutate(op->min);
+    Expr extent = mutate(op->extent);
+    if(min.same_as(op->min)
+       && extent.same_as(op->extent))
+        return op;
+    return Range::make(min, extent);
 }
 
 Expr IRMutator::visit(const Attr *op){

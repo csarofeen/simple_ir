@@ -28,6 +28,10 @@ BINARY_OP_VISIT(Mod)
 BINARY_OP_VISIT(LT)
 BINARY_OP_VISIT(Set)
 
+void IRVisitor::visit(const Tensor *op){
+    std::runtime_error("Not implemented");
+}
+
 void IRVisitor::visit(const JITTensor *op){
 
     for(const auto shape : op->shapes)
@@ -45,9 +49,13 @@ void IRVisitor::visit(const TensorAccessor *op){
 
 void IRVisitor::visit(const For *op){
     op->loop_var.accept(this);
+    op->range.accept(this);
+    op->body.accept(this);
+}
+
+void IRVisitor::visit(const Range *op){
     op->min.accept(this);
     op->extent.accept(this);
-    op->body.accept(this);
 }
 
 void IRVisitor::visit(const If *op){

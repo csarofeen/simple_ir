@@ -36,9 +36,9 @@ public:
             loop_vars.push_back(loop_var);
             
             if(i == domain->shapes.size()-1)
-                loops.push_back(For::make(IntImm::make(0), domain->shapes[i], loop_var, exprs));
+                loops.push_back(For::make(Range::make(IntImm::make(0), domain->shapes[i]), loop_var, exprs));
             else
-                loops.push_back(For::make(IntImm::make(0), domain->shapes[i], loop_var, loops[loops.size()-1]));
+                loops.push_back(For::make(Range::make(IntImm::make(0), domain->shapes[i]), loop_var, loops[loops.size()-1]));
         }
 
         Expr loop_nest = loops[loops.size()-1];
@@ -154,21 +154,20 @@ public:
         }
         auto ol = outer_loop.as<For>();
         auto il = inner_loop.as<For>();
-        if(ol->min.as<IntImm>()->value != 0
-        || il->min.as<IntImm>()->value != 0){
+        if(ol->range.as<Range>()->min.as<IntImm>()->value != 0
+        || il->range.as<Range>()->min.as<IntImm>()->value != 0){
             std::cerr<<"Could not fuse loops. Loop fusion requires loops starting at 0."<<std::endl;
             return Expr();
         }
         std::string new_name = ol->loop_var.as<Variable>()->name + "." + il->loop_var.as<Variable>()->name + ".fused";
         Expr new_loop_var = Variable::make(new_name.c_str());
         Expr fused_loop = For::make(
-            IntImm::make(0),
-            Mul::make(ol->extent, il->extent),
+            Range::make(IntImm::make(0), Mul::make(ol->range.as<Range>()->extent, il->range.as<Range>()->extent)),
             new_loop_var,
             ol->body);
         fuser.replace.emplace(ol, fused_loop);
-        fuser.replace.emplace(ol->loop_var, Div::make(new_loop_var, il->extent));
-        fuser.replace.emplace(il->loop_var, Mod::make(new_loop_var, il->extent));
+        fuser.replace.emplace(ol->loop_var, Div::make(new_loop_var, il->range.as<Range>()->extent));
+        fuser.replace.emplace(il->loop_var, Mod::make(new_loop_var, il->range.as<Range>()->extent));
         fuser.remove.emplace(inner_loop);
         return fuser.mutate(container);
     }
@@ -197,12 +196,12 @@ public:
         Expr lov = Variable::make( (lv->name+".outer").c_str());
         Expr liv = Variable::make( (lv->name+".inner").c_str());
         //if(lov * split_factor + liv < loop->extent){}
-        Expr pred = If::make(LT::make(Add::make( Mul::make(lov, split_factor), liv ), l->extent), l->body);
-        il = For::make(IntImm::make(0), split_factor, liv, pred);
-        Expr extent = Add::make(l->extent, split_factor);
+        Expr pred = If::make(LT::make(Add::make( Mul::make(lov, split_factor), liv ), l->range.as<Range>()->extent), l->body);
+        il = For::make(Range::make(IntImm::make(0), split_factor), liv, pred);
+        Expr extent = Add::make(l->range.as<Range>()->extent, split_factor);
         extent = Sub::make(extent, IntImm::make(1));
         extent = Div::make(extent, split_factor);
-        ol = For::make(IntImm::make(0), extent, lov, il);
+        ol = For::make(Range::make(IntImm::make(0), extent), lov, il);
         return ol;
     }
 
@@ -252,7 +251,7 @@ public:
 
             return IRMutator::mutate(
                 Attr::make(Attr::ATTR_TYPE::ThreadBinding, 
-                For::make(loop.as<For>()->min, loop.as<For>()->extent, thread, body), thread)
+                For::make(Range::make(loop.as<For>()->range.as<Range>()->min, loop.as<For>()->range.as<Range>()->extent), thread, body), thread)
             );
         }
         return IRMutator::visit(op);
@@ -270,13 +269,13 @@ public:
     static Expr bind(Expr container, Expr loop, Expr thread){
         assert(loop.as<For>());
         auto t = thread.as<Thread>();
-        assert(loop.as<For>()->min.as<IntImm>());
+        assert(loop.as<For>()->range.as<Range>()->min.as<IntImm>());
         if(t->thread_type == Thread::THREAD_TYPE::TIDx
         || t->thread_type == Thread::THREAD_TYPE::TIDy
         || t->thread_type == Thread::THREAD_TYPE::TIDz
         )
-            assert(loop.as<For>()->extent.as<IntImm>());
-        assert(loop.as<For>()->min.as<IntImm>()->value==0);
+        assert(loop.as<For>()->range.as<Range>()->extent.as<IntImm>());
+        assert(loop.as<For>()->range.as<Range>()->min.as<IntImm>()->value==0);
         assert(thread.as<Thread>());
         LoopBinder binder;
         

@@ -54,11 +54,8 @@ public:
         indent();
         os << "For(size_t ";
         PrintVisitor::visit(op->loop_var);
-        os << " = ";
-        PrintVisitor::visit(op->min);
-        PrintVisitor::visit(op->extent);
-        os << " ; ++";
-        PrintVisitor::visit(op->loop_var);
+        os << " in ";
+        PrintVisitor::visit(op->range);
         os << "){\n";
         indent_count++;
         PrintVisitor::visit(op->body);
@@ -70,7 +67,7 @@ public:
     void visit(const Attr *op){
         if(op->attr_type == Attr::ATTR_TYPE::ThreadBinding)
             if(thread_lookup.find(op->value.as<Thread>()->thread_type) == thread_lookup.end())
-                thread_lookup[op->value.as<Thread>()->thread_type] = op->body.as<For>()->extent;
+                thread_lookup[op->value.as<Thread>()->thread_type] = op->body.as<For>()->range.as<Range>()->extent;
         PrintVisitor::visit(op->body);
     }
     

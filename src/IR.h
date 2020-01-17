@@ -51,6 +51,7 @@ enum class IRNodeType {
     IntImm,
     For,
     If,
+    Range,
     Attr,
     TensorAccessor,
     Tensor,
@@ -341,19 +342,64 @@ static Expr make(Expr tensor, std::vector<Expr> indexers){
   std::vector<Expr> indexers;
 };
 
+struct Range: public ExprNode<Range>{
+public:
+static Expr make(Expr min, Expr extent){
+    Range *node = new Range;
+    node->min = min;
+    node->extent = extent;
+    return node;
+}
+  static const IRNodeType _node_type = IRNodeType::Range;
+  Expr min, extent;
+};
+
+
+struct Tensor: public ExprNode<Tensor>{
+
+public:
+  
+  static Expr make(
+    int ndims,
+    JITTensor *_jittensor,
+    std::vector<Expr> indexers,
+    const char* name = ""
+  ){
+    Tensor *node = new Tensor;
+    node->jittensor_ = _jittensor;
+    node->name = _jittensor->name;
+    node->ndims = _jittensor->ndims;
+    node->indexers = indexers;
+    for(int i=0; i<_jittensor->ndims; ++i){
+      node->domain.push_back(
+          Range::make(IntImm::make(0), _jittensor->shapes[i])
+      );
+    }
+    //node->shapes = shapes -> Domains!
+    return node;
+  }
+
+  std::vector<Expr> domain;
+  std::vector<Expr> indexers;
+  Expr jittensor_;
+  std::string name = "";
+  static const IRNodeType _node_type = IRNodeType::Tensor;
+  int ndims = 0;
+};
+
+
 
 struct For: public ExprNode<For>{
 public:
-static Expr make(Expr min, Expr extent, Expr loop_var, Expr body){
+static Expr make(Expr range, Expr loop_var, Expr body){
     For *node = new For;
-    node->min = min;
-    node->extent = extent;
+    node->range = range;
     node->loop_var = loop_var;
     node->body = body;
     return node;
 }
   static const IRNodeType _node_type = IRNodeType::For;
-  Expr min, extent, body, loop_var;
+  Expr range, body, loop_var;
 };
 
 struct Thread: public ExprNode<Thread>{

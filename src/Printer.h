@@ -112,9 +112,7 @@ public:
         os << "For (";
         visit(op->loop_var);
         os << " in ";
-        visit(op->min);
-        os << ":";
-        visit(op->extent);
+        visit(op->range);
         os << "){\n";
         indent_count++;
         visit(op->body);
@@ -136,6 +134,16 @@ public:
         os << "}\n";
     }
 
+    void visit(const Range *op)
+    {
+        os << "r[";
+        visit(op->min);
+        os << " : ";
+        visit(op->extent);
+        os << "]";
+    }
+
+
     void visit(const Attr *op)
     {
 
@@ -144,7 +152,7 @@ public:
         case (Attr::ATTR_TYPE::ThreadBinding):
             os << "//Attr thread ";
             visit(op->value);
-            os << " bound to " << op->body.as<For>()->extent;
+            os << " bound to " << op->body.as<For>()->range.as<Range>()->extent;
             break;
         case (Attr::ATTR_TYPE::Null):
             os << "Unknown attribute: ";
