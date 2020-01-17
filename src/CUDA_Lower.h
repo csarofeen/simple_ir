@@ -32,13 +32,13 @@ public:
 
     void visit(const TensorAccessor *op)
     {
-        const Tensor *tensor = op->tensor.as<Tensor>();
+        const JITTensor *tensor = op->tensor.as<JITTensor>();
         os << tensor->name << "[";
 
         for(size_t i = 0; i<op->indexers.size(); ++i){
             PrintVisitor::visit(op->indexers[i]);
             os<<" * ";
-            PrintVisitor::visit(op->tensor.as<Tensor>()->strides[i]);
+            PrintVisitor::visit(op->tensor.as<JITTensor>()->strides[i]);
             if(i != op->indexers.size()-1)
                 os<<" + ";
         }
@@ -77,7 +77,7 @@ public:
     static std::ostream& lower(std::ostream &os, Expr container, std::vector<Expr> tensor_list, std::string kernel_name){
         std::map<const Variable*, std::string> var_lookup;
         for(const auto& T : tensor_list){
-            const auto& tensor = T.as<Tensor>();
+            const auto& tensor = T.as<JITTensor>();
             assert(tensor);
             for(int i=0; i<tensor->ndims; i++){
                 const auto& size = tensor->shapes[i].as<Variable>();
@@ -91,9 +91,9 @@ public:
 
         os<<"__global__ void\n"<<kernel_name<<"( ";
         for(const auto& T : tensor_list){
-            const auto& tensor = T.as<Tensor>();
+            const auto& tensor = T.as<JITTensor>();
             assert(tensor);
-            os<<"Tensor* "<<tensor->name;
+            os<<"JITTensor* "<<tensor->name;
             if(!T.same_as(tensor_list[tensor_list.size()-1]))
                 os<<", ";
 

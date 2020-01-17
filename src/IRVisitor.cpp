@@ -28,7 +28,7 @@ BINARY_OP_VISIT(Mod)
 BINARY_OP_VISIT(LT)
 BINARY_OP_VISIT(Set)
 
-void IRVisitor::visit(const Tensor *op){
+void IRVisitor::visit(const JITTensor *op){
 
     for(const auto shape : op->shapes)
         shape.accept(this);

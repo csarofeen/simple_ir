@@ -71,7 +71,7 @@ public:
         os << ";\n";
     }
 
-    void visit(const Tensor *op)
+    void visit(const JITTensor *op)
     {
         os << "{ " << op->name << " [";
         for (const auto shape : op->shapes)
@@ -93,7 +93,7 @@ public:
 
     void visit(const TensorAccessor *op)
     {
-        const Tensor *tensor = op->tensor.as<Tensor>();
+        const JITTensor *tensor = op->tensor.as<JITTensor>();
         os << tensor->name << "(";
 
         for (const auto ind : op->indexers)

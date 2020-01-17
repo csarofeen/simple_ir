@@ -16,14 +16,14 @@ class LoopTranslate : public IRMutator{
     
 
 public:
-    Expr visit(const Tensor *op){
+    Expr visit(const JITTensor *op){
         //Only working for pointwise operations where all tensors have same number of dims
         //and same sizes on those dims (not strides)
         assert(op->ndims == loop_vars.size());
         return TensorAccessor::make(op, loop_vars);       
     }
     
-    static Expr translate(const Tensor* domain, const Block* exprs){
+    static Expr translate(const JITTensor* domain, const Block* exprs){
         
         const char* loop_names = "ijklmnop";
         std::vector<Expr> loops;

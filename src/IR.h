@@ -54,6 +54,7 @@ enum class IRNodeType {
     Attr,
     TensorAccessor,
     Tensor,
+    JITTensor,
     Thread,
     Block
 };
@@ -297,13 +298,13 @@ struct Variable : public ExprNode<Variable> {
 
 };
 
-struct Tensor: public ExprNode<Tensor>{
+struct JITTensor: public ExprNode<JITTensor>{
 
 public:
   std::vector<Expr> shapes;
   std::vector<Expr> strides;
   
-  static int tensor_name_count;
+  static int name_count;
 
 static Expr make(
   int ndims,
@@ -311,16 +312,16 @@ static Expr make(
   std::vector<Expr> strides,
   const char* name = ""
   ){
-    Tensor *node = new Tensor;
+    JITTensor *node = new JITTensor;
     node->ndims = ndims;
     node->shapes = shapes;
     node->strides = strides;
-    node->name = name == "" ? "tensor"+std::to_string(tensor_name_count++) : name;
+    node->name = name == "" ? "jittensor"+std::to_string(name_count++) : name;
     return node;
 }
 
   std::string name = "";
-  static const IRNodeType _node_type = IRNodeType::Tensor;
+  static const IRNodeType _node_type = IRNodeType::JITTensor;
   int ndims = 0;
 
 };
@@ -339,6 +340,7 @@ static Expr make(Expr tensor, std::vector<Expr> indexers){
   Expr tensor;
   std::vector<Expr> indexers;
 };
+
 
 struct For: public ExprNode<For>{
 public:

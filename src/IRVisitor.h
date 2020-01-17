@@ -15,7 +15,7 @@ class Mod;
 class LT;
 class Set;
 class Variable;
-class Tensor;
+class JITTensor;
 class TensorAccessor;
 class For;
 class If;
@@ -44,7 +44,7 @@ public:
     virtual void visit(const LT *);
     virtual void visit(const IntImm *);
     virtual void visit(const Variable *);
-    virtual void visit(const Tensor *);
+    virtual void visit(const JITTensor *);
     virtual void visit(const TensorAccessor *);
     virtual void visit(const For *);
     virtual void visit(const If *);

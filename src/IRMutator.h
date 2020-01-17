@@ -17,7 +17,7 @@ class Mod;
 class LT;
 class Set;
 class Variable;
-class Tensor;
+class JITTensor;
 class TensorAccessor;
 class For;
 class If;
@@ -46,7 +46,7 @@ protected:
     virtual Expr visit(const LT *);
     virtual Expr visit(const Set *);
     virtual Expr visit(const Variable *);
-    virtual Expr visit(const Tensor *);
+    virtual Expr visit(const JITTensor *);
     virtual Expr visit(const TensorAccessor *);
     virtual Expr visit(const For *);
     virtual Expr visit(const If *);

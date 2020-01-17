@@ -54,7 +54,7 @@ Expr IRMutator::visit(const LT *op) {
     return mutate_binary_operator(this, op);
 }
 
-Expr IRMutator::visit(const Tensor *op){
+Expr IRMutator::visit(const JITTensor *op){
 
     bool modded = false;
     std::vector<Expr> shapes;
@@ -75,7 +75,7 @@ Expr IRMutator::visit(const Tensor *op){
     }
 
     if(modded)
-        return Tensor::make(op->ndims, shapes, strides, op->name.c_str());
+        return JITTensor::make(op->ndims, shapes, strides, op->name.c_str());
     return op;
 }
 
