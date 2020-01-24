@@ -21,11 +21,16 @@ class Tensor;
 class Range;
 class JITTensor;
 class TensorAccessor;
+class TensorDomain;
+class Merge;
+class Split;
+class Reorder;
 class For;
 class If;
 class Attr;
 class Thread;
 class Block;
+class Null;
 
 class IRMutator {
 public:
@@ -51,12 +56,17 @@ protected:
     virtual Expr visit(const JITTensor *);
     virtual Expr visit(const Tensor *);
     virtual Expr visit(const Range *);
+    virtual Expr visit(const Split *);
+    virtual Expr visit(const Merge *);
+    virtual Expr visit(const Reorder *);
+    virtual Expr visit(const TensorDomain *);
     virtual Expr visit(const TensorAccessor *);
     virtual Expr visit(const For *);
     virtual Expr visit(const If *);
     virtual Expr visit(const Attr *);
     virtual Expr visit(const Thread *);
     virtual Expr visit(const Block *);
+    virtual Expr visit(const Null *);
 };
 
 }

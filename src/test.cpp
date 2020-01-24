@@ -33,8 +33,33 @@ Expr get_tensor(int ndims = 0, const char* name = ""){
 int main(){
 
   std::cout<<"Start"<<std::endl;
+  std::vector<Expr> r = {
+    Range::make(IntImm::make(0), IntImm::make(4)),
+    Range::make(IntImm::make(0), IntImm::make(8))
+  };
 
-  std::cout<<std::endl;
+  Expr td = TensorDomain::make(Null::make(), r);
+
+  Expr split = Split::make(td, 1, IntImm::make(3));
+  std::cout<<"split"<<split<<std::endl<<std::endl;
+
+  Expr merge = Merge::make(split, 1);
+  std::cout<<"merge"<<merge<<std::endl;
+
+  std::vector<Expr> r2 = {
+    Range::make(IntImm::make(0), IntImm::make(4)),
+    Range::make(IntImm::make(0), IntImm::make(8)),
+    Range::make(IntImm::make(0), IntImm::make(16))
+  };
+  
+  Expr td2 = TensorDomain::make(Null::make(), r2);
+
+  std::unordered_map<int, int> reorder_map;
+  reorder_map[0] = 2;
+  reorder_map[2] = 0;
+  
+  Expr reordered = Reorder::make(td2, reorder_map);
+  std::cout<<"Reordered: "<<reordered<<std::endl;
   std::cout<<"\nDone"<<std::endl;
 
 }

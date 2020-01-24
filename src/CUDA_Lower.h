@@ -55,7 +55,7 @@ public:
         os << "For(size_t ";
         PrintVisitor::visit(op->loop_var);
         os << " in ";
-        PrintVisitor::visit(op->range);
+        op->range->accept(this);
         os << "){\n";
         indent_count++;
         PrintVisitor::visit(op->body);

@@ -55,7 +55,7 @@ Expr IRMutator::visit(const LT *op) {
 }
 
 Expr IRMutator::visit(const Tensor *op){
-    std::runtime_error("Not implemented.");
+    throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
 }
 
 Expr IRMutator::visit(const JITTensor *op){
@@ -154,5 +154,40 @@ Expr IRMutator::visit(const Block *op){
     return op;
     
 }
+
+Expr IRMutator::visit(const Split *op){
+    Expr dom = mutate(op->original_domain);
+    Expr factor = mutate(op->factor);
+    if( dom.same_as(op->original_domain)
+     && factor.same_as(op->factor)
+    ){
+        return op;
+    }
+    return Split::make(dom, op->axis, factor);
+}
+
+Expr IRMutator::visit(const Merge *op){
+    Expr dom = mutate(op->original_domain);
+    if( dom.same_as(op->original_domain) )
+        return op;
+    
+    return Merge::make(dom, op->axis);
+}
+
+Expr IRMutator::visit(const Reorder *op){
+    throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+    return op;
+}
+
+Expr IRMutator::visit(const TensorDomain *op){
+    throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+    return op;
+}
+
+Expr IRMutator::visit(const Null *op){
+    throw std::runtime_error("Null node hit in mutator.");
+    return op;
+}
+
 
 }

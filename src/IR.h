@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <unordered_map>
 #include "IntrusivePtr.h"
 #include "IRVisitor.h"
 #include "IRMutator.h"
@@ -53,11 +54,16 @@ enum class IRNodeType {
     If,
     Range,
     Attr,
+    Merge,
+    Split,
+    Reorder,
+    TensorDomain,
     TensorAccessor,
     Tensor,
     JITTensor,
     Thread,
-    Block
+    Block,
+    Null
 };
 
 /** The abstract base classes for a node in the Halide IR. */
@@ -138,11 +144,19 @@ struct IRHandle : public IntrusivePtr<const IRNode> {
      */
     template<typename T>
     const T *as() const {
-        if (ptr && ptr->node_type == T::_node_type) {
-            return (const T *)ptr;
-        }
+      if (ptr && ptr->node_type == T::_node_type) {
+          return (const T *)ptr;
+      }
+      throw std::runtime_error(std::string("Bad node type cast. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+      return nullptr;
+    }
 
-        return nullptr;
+    template<typename T>
+    bool is() const {
+      if (ptr && ptr->node_type == T::_node_type) {
+          return true;
+      }
+      return false;
     }
 
     IRNodeType node_type() const {
@@ -199,6 +213,12 @@ struct ExprHash {
 
 // TODO(REVIEW): should we move all the nodes below somehwere else?
 // so adding a new node is not rebuilding the universe.
+
+struct Null : public ExprNode<Null> {
+  public:
+    static Expr make(){ return new Null;}
+    static const IRNodeType _node_type = IRNodeType::Null;
+};
 
 struct IntImm : public ExprNode<IntImm> {
     int64_t value;
@@ -354,6 +374,68 @@ static Expr make(Expr min, Expr extent){
   Expr min, extent;
 };
 
+struct TensorDomain : public ExprNode<TensorDomain>{
+  public:
+  static Expr make(
+    Expr origin,
+    std::vector<Expr> domain
+  ){
+    TensorDomain *td = new TensorDomain();
+    td->origin = origin;
+    td->domain = domain;
+    return td;
+  }
+
+  int ndims() const {return domain.size();}  
+  Expr origin;
+  std::vector<Expr> domain;
+  static const IRNodeType _node_type = IRNodeType::TensorDomain;
+};
+
+struct Split : public ExprNode<Split>{
+  public:
+    static const IRNodeType _node_type = IRNodeType::Split;
+
+    Expr original_domain;
+    int axis;
+    Expr factor;
+    
+    static Expr make(
+      Expr original_domain,
+      int axis,
+      Expr factor
+    );
+
+};
+
+struct Merge : public ExprNode<Merge>{
+public:
+  static const IRNodeType _node_type = IRNodeType::Merge;
+
+  Expr original_domain;
+  int axis;
+  
+  static Expr make(
+    Expr original_domain,
+    int axis
+  );
+
+};
+
+struct Reorder : public ExprNode<Reorder>{
+public:
+  static const IRNodeType _node_type = IRNodeType::Reorder;
+
+  Expr original_domain;
+  //pos2axis[new_position] = old_position
+  std::vector<int> pos2axis;
+  
+  static Expr make(
+    Expr original_domain,
+    std::unordered_map<int, int> axis2pos
+  );
+
+};
 
 struct Tensor: public ExprNode<Tensor>{
 

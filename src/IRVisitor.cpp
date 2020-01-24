@@ -29,7 +29,7 @@ BINARY_OP_VISIT(LT)
 BINARY_OP_VISIT(Set)
 
 void IRVisitor::visit(const Tensor *op){
-    std::runtime_error("Not implemented");
+    throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
 }
 
 void IRVisitor::visit(const JITTensor *op){
@@ -71,6 +71,29 @@ void IRVisitor::visit(const Attr *op){
 void IRVisitor::visit(const Block *op){
     for(auto &expr : op->exprs)
         expr.accept(this);
+}
+
+void IRVisitor::visit(const Merge *op){
+    op->original_domain.accept(this);
+}
+
+void IRVisitor::visit(const Split *op){
+    op->original_domain.accept(this);
+    op->factor.accept(this);
+}
+
+void IRVisitor::visit(const Reorder *op){
+    throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+}
+
+void IRVisitor::visit(const TensorDomain *op){
+    for(const auto& r : op->domain){
+        r.accept(this);
+    }
+}
+
+void IRVisitor::visit(const Null *op){
+    throw std::runtime_error(std::string("Found Null op in visitor. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
 }
 
 }

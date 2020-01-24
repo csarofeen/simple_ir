@@ -6,6 +6,8 @@
 namespace Fuser
 {
 
+std::ostream &operator<<(std::ostream &os, const std::vector<int> &my_set);
+
 std::ostream &operator<<(std::ostream &os, const Expr &e);
 
 template <typename T>
@@ -191,8 +193,48 @@ public:
         for(const auto& expr: op->exprs){
             expr.accept(this);
         }
-
     }
+
+    void visit(const Split* op){
+        op->original_domain.accept(this);
+        os<<"\n";
+        indent();
+        os<<"Split on axis: "<<op->axis<< " by factor: ";
+        op->factor.accept(this);
+        os<<"\n";
+        indent();
+    }
+
+    void visit(const Merge* op){
+        op->original_domain.accept(this);
+        os<<"\n";
+        indent();
+        os<<"Merge on axis: "<<op->axis;
+        os<<"\n";
+        indent();
+    }
+
+    void visit(const Reorder* op){
+        op->original_domain.accept(this);
+        os<<"\n";
+        indent();
+        os<<"Reordering with map: "<<op->pos2axis<<"\n";
+        indent();
+    }
+
+    void visit(const TensorDomain* op){
+        if(!op->origin.is<Null>()){
+            op->origin.accept(this);
+        }
+        os << "TensorDomain{ ";
+        for(auto it = op->domain.begin(); it != op->domain.end(); ++it){
+            (*it).accept(this);
+            if(it != --op->domain.end())
+                os<<", ";
+        }
+        os<<" }";
+    }
+
 };
 
 } // namespace Fuser
