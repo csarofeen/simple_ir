@@ -47,34 +47,53 @@ public:
         os << val->value;
     };
 
-#define BINARY_PRINT(TYPE, STRING)  \
-    void visit(const TYPE *op)      \
-    {                               \
-        os << "( ";                 \
-        visit(op->a);               \
-        os << " " << STRING << " "; \
-        visit(op->b);               \
-        os << " )";                 \
-    }
 
-    BINARY_PRINT(Add, "+")
-    BINARY_PRINT(Sub, "-")
-    BINARY_PRINT(Mul, "*")
-    BINARY_PRINT(Div, "/")
-    BINARY_PRINT(Mod, "%")
-    BINARY_PRINT(LT, "<")
+    std::unordered_map<BinaryOpType, std::string> bin_op_map = {
+        {BinaryOpType::Add, "+"},
+        {BinaryOpType::Sub, "-"},
+        {BinaryOpType::Mul, "*"},
+        {BinaryOpType::Div, "/"},
+        {BinaryOpType::Mod, "%"},
+        {BinaryOpType::LT,  "<"},
+    };
 
-    void visit(const Set *op)
+    void visit(const BinaryOp* op)
     {
-        indent();
-        visit(op->a);
-        os << " = ";
-        visit(op->b);
-        os << ";\n";
+        op->a.accept(this);
+        if(bin_op_map.find(op->op_type) == bin_op_map.end())
+            throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+        os<<" "<<bin_op_map[op->op_type]<<" ";
+        op->b.accept(this);
     }
+
+    void visit(const Tensor *op){
+
+        if(op->origin.is<Null>()){
+            os<<op->name;
+        }else{
+            op->origin.accept(this);
+            os<<"\n";
+            os<<op->name;
+        }
+        /*
+        if(!op->origin.is<Null>()){
+            if(op->origin.is<BinaryOp>()){
+
+            }else{
+
+            }
+            os<<op->name;
+            os<<" = ";
+            op->origin.accept(this);
+            os<<"\n";
+        }
+        os<<op->name;
+        */
+    }
+
 
     void visit(const JITTensor *op)
-    {
+    {   
         os << "{ " << op->name << " [";
         for (const auto shape : op->shapes)
         {
@@ -91,6 +110,12 @@ public:
                 os << ", ";
         }
         os << ") } ";
+
+        if(!op->origin.is<Null>()){
+            os<<" = ";
+            op->origin.accept(this);
+        }
+
     }
 
     void visit(const TensorAccessor *op)
@@ -233,6 +258,10 @@ public:
                 os<<", ";
         }
         os<<" }";
+    }
+
+    void visit(const Null* op){
+        os<<"NULL";
     }
 
 };

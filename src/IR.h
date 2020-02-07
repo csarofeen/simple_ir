@@ -40,30 +40,44 @@ IRVisitor.cpp
 namespace Fuser{
 
 enum class IRNodeType {
-    // Exprs, in order of strength
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
+    BinaryOp,
+    UnaryOp,
     Set,
-    LT,
+
     Variable,
     IntImm,
+
     For,
     If,
+
     Range,
     Attr,
     Merge,
     Split,
     Reorder,
+
     TensorDomain,
     TensorAccessor,
     Tensor,
     JITTensor,
-    Thread,
-    Block,
+
+    Thread, //Threads that can be bound
+    Block,  //A group of exprs
     Null
+};
+
+enum class BinaryOpType {
+  Add,
+  Sub,
+  Mul,
+  Div,
+  Mod,
+  LT
+};
+
+enum class UnaryOpType {
+  SumReduction,
+  ProdReduction
 };
 
 /** The abstract base classes for a node in the Halide IR. */
@@ -232,78 +246,18 @@ struct IntImm : public ExprNode<IntImm> {
     static const IRNodeType _node_type = IRNodeType::IntImm;
 };
 
-namespace {
-template<typename T>
-Expr make_binary_op(Expr a, Expr b){
-  T *node = new T;
-  node->a = std::move(a);
-  node->b = std::move(b);
-  return node;
-}
-}
-
-struct Add : public ExprNode<Add> {
+struct BinaryOp : public ExprNode<BinaryOp> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Add>(a, b);
+    static Expr make(Expr a, Expr b, BinaryOpType op_type){
+      BinaryOp *op = new BinaryOp;
+      op->a = a;
+      op->b = b;
+      op->op_type = op_type;
+      return op;
     }
-
-    static const IRNodeType _node_type = IRNodeType::Add;
-};
-
-struct Sub : public ExprNode<Sub> {
-    Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Sub>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::Sub;
-};
-
-struct Mul : public ExprNode<Mul> {
-    Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Mul>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::Mul;
-};
-
-struct Div : public ExprNode<Div> {
-    Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Div>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::Div;
-};
-
-struct Mod : public ExprNode<Mod> {
-    Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Mod>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::Mod;
-};
-
-struct LT : public ExprNode<LT> {
-    Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<LT>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::LT;
-};
-
-struct Set : public ExprNode<Set> {
-      Expr a, b;
-
-    static Expr make(Expr a, Expr b) {
-      return make_binary_op<Set>(a, b);
-    }
-    static const IRNodeType _node_type = IRNodeType::Set;
+    BinaryOpType op_type;
+    static const IRNodeType _node_type = IRNodeType::BinaryOp;
 };
 
 struct Variable : public ExprNode<Variable> {
@@ -319,13 +273,26 @@ struct Variable : public ExprNode<Variable> {
 
 };
 
+struct Range: public ExprNode<Range>{
+public:
+
+static Expr make(Expr min, Expr extent, bool reduction_domain = false){
+    Range *node = new Range;
+    node->min = min;
+    node->extent = extent;
+    node->reduction = reduction_domain;
+    return node;
+}
+
+  static const IRNodeType _node_type = IRNodeType::Range;
+  Expr min, extent;
+  bool reduction;
+};
+
 struct JITTensor: public ExprNode<JITTensor>{
+static int name_count;
 
 public:
-  std::vector<Expr> shapes;
-  std::vector<Expr> strides;
-  
-  static int name_count;
 
 static Expr make(
   int ndims,
@@ -337,14 +304,64 @@ static Expr make(
     node->ndims = ndims;
     node->shapes = shapes;
     node->strides = strides;
+    node->origin = Null::make();
     node->name = name == "" ? "jittensor"+std::to_string(name_count++) : name;
     return node;
 }
 
-  std::string name = "";
+static Expr make(
+    const JITTensor *ref,
+    Expr origin
+  ){
+    JITTensor *node = new JITTensor;
+    node->origin = origin;
+    node->ndims = ref->ndims;
+    node->shapes = ref->shapes;
+    node->strides = ref->strides;
+    node->name = "jittensor"+std::to_string(name_count++);
+    return node;
+}
+
+  std::vector<Expr> shapes;
+  std::vector<Expr> strides;
+    std::string name = "";
+  Expr origin;
   static const IRNodeType _node_type = IRNodeType::JITTensor;
   int ndims = 0;
 
+};
+
+
+struct Tensor: public ExprNode<Tensor>{
+static int name_count;
+
+public:
+
+  static Expr make(
+    const JITTensor *_jittensor,
+    Expr origin = Null::make()
+  );
+
+static Expr make(
+    const Tensor *ref,
+    Expr origin
+  ){
+    Tensor *node = new Tensor;
+    node->origin = origin;
+    node->ndims = ref->ndims;
+    node->jittensor_ = ref->jittensor_;
+    node->domain = ref->domain;
+    node->name = "tensor"+std::to_string(name_count++);
+    return node;
+}
+
+  std::vector<Expr> domain;
+  std::vector<Expr> indexers;
+  Expr jittensor_;
+  std::string name = "";
+  Expr origin;
+  static const IRNodeType _node_type = IRNodeType::Tensor;
+  int ndims = 0;
 };
 
 struct TensorAccessor: public ExprNode<TensorAccessor>{
@@ -360,18 +377,6 @@ static Expr make(Expr tensor, std::vector<Expr> indexers){
   static const IRNodeType _node_type = IRNodeType::TensorAccessor;
   Expr tensor;
   std::vector<Expr> indexers;
-};
-
-struct Range: public ExprNode<Range>{
-public:
-static Expr make(Expr min, Expr extent){
-    Range *node = new Range;
-    node->min = min;
-    node->extent = extent;
-    return node;
-}
-  static const IRNodeType _node_type = IRNodeType::Range;
-  Expr min, extent;
 };
 
 struct TensorDomain : public ExprNode<TensorDomain>{
@@ -400,11 +405,17 @@ struct Split : public ExprNode<Split>{
     int axis;
     Expr factor;
     
-    static Expr make(
+  static Expr make(
       Expr original_domain,
       int axis,
       Expr factor
-    );
+  ){
+      Split *split = new Split;
+      split->original_domain = original_domain;
+      split->axis = axis;
+      split->factor = factor;
+      return split;  
+  }
 
 };
 
@@ -416,9 +427,14 @@ public:
   int axis;
   
   static Expr make(
-    Expr original_domain,
-    int axis
-  );
+      Expr original_domain,
+      int axis
+  ){
+      Merge *merge = new Merge;
+      merge->original_domain = original_domain;
+      merge->axis = axis;
+      return merge;
+  }
 
 };
 
@@ -430,46 +446,18 @@ public:
   //pos2axis[new_position] = old_position
   std::vector<int> pos2axis;
   
+
   static Expr make(
-    Expr original_domain,
-    std::unordered_map<int, int> axis2pos
-  );
-
-};
-
-struct Tensor: public ExprNode<Tensor>{
-
-public:
-  
-  static Expr make(
-    int ndims,
-    JITTensor *_jittensor,
-    std::vector<Expr> indexers,
-    const char* name = ""
+      Expr original_domain,
+      std::vector<int> pos2axis
   ){
-    Tensor *node = new Tensor;
-    node->jittensor_ = _jittensor;
-    node->name = _jittensor->name;
-    node->ndims = _jittensor->ndims;
-    node->indexers = indexers;
-    for(int i=0; i<_jittensor->ndims; ++i){
-      node->domain.push_back(
-          Range::make(IntImm::make(0), _jittensor->shapes[i])
-      );
-    }
-    //node->shapes = shapes -> Domains!
-    return node;
+      Reorder *reorder = new Reorder;
+      reorder->original_domain = original_domain;
+      reorder->pos2axis = pos2axis;
+      return reorder;
   }
 
-  std::vector<Expr> domain;
-  std::vector<Expr> indexers;
-  Expr jittensor_;
-  std::string name = "";
-  static const IRNodeType _node_type = IRNodeType::Tensor;
-  int ndims = 0;
 };
-
-
 
 struct For: public ExprNode<For>{
 public:

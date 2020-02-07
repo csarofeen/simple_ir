@@ -8,6 +8,7 @@
 #include "Mutators.h"
 #include "LoopTransforms.h"
 #include "CUDA_Lower.h"
+#include "Arith.h"
 
 using namespace Fuser;
 
@@ -33,33 +34,25 @@ Expr get_tensor(int ndims = 0, const char* name = ""){
 int main(){
 
   std::cout<<"Start"<<std::endl;
-  std::vector<Expr> r = {
-    Range::make(IntImm::make(0), IntImm::make(4)),
-    Range::make(IntImm::make(0), IntImm::make(8))
-  };
 
-  Expr td = TensorDomain::make(Null::make(), r);
+  Expr jitA = get_tensor(3, "A");
+  Expr jitB = get_tensor(3, "B");
+  Expr jitD = get_tensor(3, "D");
 
-  Expr split = Split::make(td, 1, IntImm::make(3));
-  std::cout<<"split"<<split<<std::endl<<std::endl;
+  std::cout<<jitA<<std::endl;  
 
-  Expr merge = Merge::make(split, 1);
-  std::cout<<"merge"<<merge<<std::endl;
+  Expr C = add(jitA, jitB);
+  Expr E = mul(C, jitD);
+  std::cout<<E<<std::endl;
+  std::cout<<"Try to replace jit tensors:"<<JITLower().mutate(E.as<JITTensor>())<<std::endl;
 
-  std::vector<Expr> r2 = {
-    Range::make(IntImm::make(0), IntImm::make(4)),
-    Range::make(IntImm::make(0), IntImm::make(8)),
-    Range::make(IntImm::make(0), IntImm::make(16))
-  };
-  
-  Expr td2 = TensorDomain::make(Null::make(), r2);
-
-  std::unordered_map<int, int> reorder_map;
-  reorder_map[0] = 2;
-  reorder_map[2] = 0;
-  
-  Expr reordered = Reorder::make(td2, reorder_map);
-  std::cout<<"Reordered: "<<reordered<<std::endl;
   std::cout<<"\nDone"<<std::endl;
 
 }
+
+
+//Tensor 
+// -> origin -> expr -> inputs
+// -> Tensor Domain -> IRanges, RRanges (iteration and reduction)
+// -> Iterators
+// -> Predicate

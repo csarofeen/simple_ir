@@ -9,13 +9,7 @@ class ExprNode;
 struct Expr;
 
 class IntImm;
-class Add;
-class Sub;
-class Mul;
-class Div;
-class Mod;
-class LT;
-class Set;
+class BinaryOp;
 class Variable;
 class Tensor;
 class Range;
@@ -45,13 +39,7 @@ protected:
     friend struct ExprNode;
     
     virtual Expr visit(const IntImm *);
-    virtual Expr visit(const Add *);
-    virtual Expr visit(const Sub *);
-    virtual Expr visit(const Mul *);
-    virtual Expr visit(const Div *);
-    virtual Expr visit(const Mod *);
-    virtual Expr visit(const LT *);
-    virtual Expr visit(const Set *);
+    virtual Expr visit(const BinaryOp *);
     virtual Expr visit(const Variable *);
     virtual Expr visit(const JITTensor *);
     virtual Expr visit(const Tensor *);

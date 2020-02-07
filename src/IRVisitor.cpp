@@ -14,20 +14,6 @@ EMPTY_VISIT(IntImm)
 EMPTY_VISIT(Variable)
 EMPTY_VISIT(Thread)
 
-#define BINARY_OP_VISIT(T) \
-void IRVisitor::visit(const T *op) { \
-    op->a.accept(this); \
-    op->b.accept(this); \
-}
-
-BINARY_OP_VISIT(Add)
-BINARY_OP_VISIT(Sub)
-BINARY_OP_VISIT(Mul)
-BINARY_OP_VISIT(Div)
-BINARY_OP_VISIT(Mod)
-BINARY_OP_VISIT(LT)
-BINARY_OP_VISIT(Set)
-
 void IRVisitor::visit(const Tensor *op){
     throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
 }
@@ -84,6 +70,11 @@ void IRVisitor::visit(const Split *op){
 
 void IRVisitor::visit(const Reorder *op){
     throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+}
+
+void IRVisitor::visit(const BinaryOp *op){
+    op->a.accept(this);
+    op->b.accept(this);
 }
 
 void IRVisitor::visit(const TensorDomain *op){

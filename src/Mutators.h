@@ -9,13 +9,24 @@ namespace Fuser{
 class ClearMutator : public IRMutator {
 
 public:
-    /** These methods should call 'include' on the children to only
-     * visit them if they haven't been visited already. */
-    // @{
     Expr visit(const IntImm *val){
         return IntImm::make(0);
     };
 
 };
+
+class JITLower : public IRMutator {
+
+public:
+
+    Expr visit(const JITTensor *tensor){
+        if(tensor->origin.is<Null>())
+            return Tensor::make(tensor, Null::make());
+        
+        return Tensor::make(tensor, mutate(tensor->origin));
+    }
+
+};
+
 
 }//namespace Fuser

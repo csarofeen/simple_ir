@@ -17,43 +17,6 @@ Expr IRMutator::mutate(const Expr &e) {
 Expr IRMutator::visit(const IntImm *op) {return op;}
 Expr IRMutator::visit(const Variable *op) {return op;}
 
-namespace {
-template<typename T>
-Expr mutate_binary_operator(IRMutator *mutator, const T *op) {
-    Expr a = mutator->mutate(op->a);
-    Expr b = mutator->mutate(op->b);
-    if (a.same_as(op->a) &&
-        b.same_as(op->b)) {
-        return op;
-    }
-    return T::make(std::move(a), std::move(b));
-    
-}
-}  // namespace
-
-Expr IRMutator::visit(const Add *op) {
-    return mutate_binary_operator(this, op);
-}
-Expr IRMutator::visit(const Sub *op) {
-    return mutate_binary_operator(this, op);
-}
-Expr IRMutator::visit(const Mul *op) {
-    return mutate_binary_operator(this, op);
-}
-Expr IRMutator::visit(const Div *op) {
-    return mutate_binary_operator(this, op);
-}
-Expr IRMutator::visit(const Mod *op) {
-    return mutate_binary_operator(this, op);
-}
-Expr IRMutator::visit(const Set *op) {
-    return mutate_binary_operator(this, op);
-}
-
-Expr IRMutator::visit(const LT *op) {
-    return mutate_binary_operator(this, op);
-}
-
 Expr IRMutator::visit(const Tensor *op){
     throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
 }
@@ -176,6 +139,20 @@ Expr IRMutator::visit(const Merge *op){
 
 Expr IRMutator::visit(const Reorder *op){
     throw std::runtime_error(std::string("Not implemented. ") + std::string( __FILE__ ) + " : " + std::to_string(__LINE__));
+    return op;
+}
+
+Expr IRMutator::visit(const BinaryOp *op){
+    Expr a = mutate(op->a);
+    Expr b = mutate(op->b);
+    if(
+        !(
+             a.same_as(op->a)
+          && b.same_as(op->b)
+        )
+    ){
+        return BinaryOp::make(a, b, op->op_type);
+    }
     return op;
 }
 

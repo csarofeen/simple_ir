@@ -7,13 +7,7 @@ class ExprNode;
 struct Expr;
 
 class IntImm;
-class Add;
-class Sub;
-class Mul;
-class Div;
-class Mod;
-class LT;
-class Set;
+class BinaryOp;
 class Variable;
 class JITTensor;
 class Tensor;
@@ -42,13 +36,7 @@ public:
     //Generic dispatch
     virtual void visit(const Expr *);
 
-    virtual void visit(const Add *);
-    virtual void visit(const Sub *);
-    virtual void visit(const Mul *);
-    virtual void visit(const Div *);
-    virtual void visit(const Set *);
-    virtual void visit(const Mod *);
-    virtual void visit(const LT *);
+    virtual void visit(const BinaryOp *);
     virtual void visit(const IntImm *);
     virtual void visit(const Variable *);
     virtual void visit(const JITTensor *);
